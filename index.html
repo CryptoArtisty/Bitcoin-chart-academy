@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Bitcoin Chart Academy</title>
+  <script src="https://unpkg.com/lightweight-charts@4.0.0/dist/lightweight-charts.standalone.production.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      margin: 0;
+      padding: 0;
+      background: #0a0a0a;
+      color: #eee;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      overflow-x: hidden;
+      touch-action: manipulation;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+      padding: 15px;
+      text-align: center;
+      border-bottom: 2px solid #333;
+    }
+    
+    .header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      background: linear-gradient(45deg, #26a69a, #4fc3f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .main-container {
+      display: flex;
+      height: calc(100vh - 80px);
+    }
+    
+    .sidebar {
+      width: 300px;
+      background: #1a1a1a;
+      border-right: 2px solid #333;
+      overflow-y: auto;
+      padding: 15px;
+    }
+    
+    .chart-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .controls {
+      background: #1a1a1a;
+      padding: 15px;
+      border-bottom: 1px solid #333;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-right: 15px;
+    }
+    
+    .control-group label {
+      font-size: 12px;
+      color: #ccc;
+    }
+    
+    select, input[type="color"] {
+      background: #333;
+      color: #eee;
+      border: 1px solid #555;
+      border-radius: 4px;
+      padding: 5px 8px;
+      font-size: 12px;
+    }
+    
+    .btn {
+      background: #333;
+      border: none;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn:hover {
+      background: #444;
+    }
+    
+    .btn.active {
+      background: #26a69a;
+    }
+    
+    .btn.quiz-mode {
+      background: #ff6b35;
+    }
+    
+    .btn.quiz-mode:hover {
+      background: #ff8c42;
+    }
+    
+    #chart-container {
+      flex: 1;
+      position: relative;
+      background: #111;
+      min-height: 400px;
+    }
+    
+    #chart {
+      width: 100%;
+      height: 100%;
+    }
+    
+    .tooltip {
+      position: absolute;
+      pointer-events: none;
+      background: rgba(0,0,0,0.9);
+      color: #fff;
+      font-size: 11px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      display: none;
+      z-index: 1000;
+      border: 1px solid #333;
+      max-width: 250px;
+    }
+    
+    .sidebar-section {
+      margin-bottom: 20px;
+      background: #222;
+      border-radius: 8px;
+      padding: 15px;
+    }
+    
+    .sidebar-section h3 {
+      margin: 0 0 10px 0;
+      color: #26a69a;
+      font-size: 14px;
+      border-bottom: 1px solid #333;
+      padding-bottom: 5px;
+    }
+    
+    .pattern-info {
+      margin-bottom: 15px;
+      padding: 10px;
+      background: #2a2a2a;
+      border-radius: 6px;
+      border-left: 3px solid #26a69a;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .pattern-info:hover {
+      background: #333;
+    }
+    
+    .pattern-info.highlighted {
+      background: #1a4a47;
+      border-left-color: #4fc3f7;
+    }
+    
+    .pattern-title {
+      font-weight: bold;
+      color: #4fc3f7;
+      margin-bottom: 5px;
+      font-size: 13px;
+    }
+    
+    .pattern-description {
+      font-size: 12px;
+      line-height: 1.4;
+      color: #ccc;
+    }
+    
+    .pattern-psychology {
+      font-size: 11px;
+      color: #999;
+      margin-top: 5px;
+      font-style: italic;
+    }
+    
+    .quiz-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+    
+    .quiz-panel {
+      background: #1a1a1a;
+      border: 2px solid #26a69a;
+      border-radius: 12px;
+      padding: 30px;
+      max-width: 400px;
+      text-align: center;
+    }
+    
+    .quiz-question {
+      font-size: 18px;
+      margin-bottom: 20px;
+      color: #4fc3f7;
+    }
+    
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .quiz-option {
+      background: #333;
+      border: 1px solid #555;
+      color: #eee;
+      padding: 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .quiz-option:hover {
+      background: #444;
+    }
+    
+    .quiz-option.correct {
+      background: #2e7d32;
+      border-color: #4caf50;
+    }
+    
+    .quiz-option.incorrect {
+      background: #c62828;
+      border-color: #f44336;
+    }
+    
+    .trading-panel {
+      background: #1a1a1a;
+      border-top: 2px solid #333;
+      padding: 15px;
+      display: none;
+    }
+    
+    .trading-controls {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    
+    .balance-display {
+      font-size: 14px;
+      color: #4fc3f7;
+    }
+    
+    .position-display {
+      font-size: 12px;
+      color: #ccc;
+    }
+    
+    .glossary-term {
+      margin-bottom: 10px;
+      padding: 8px;
+      background: #2a2a2a;
+      border-radius: 4px;
+    }
+    
+    .glossary-term-name {
+      font-weight: bold;
+      color: #26a69a;
+      font-size: 12px;
+    }
+    
+    .glossary-term-definition {
+      font-size: 11px;
+      color: #ccc;
+      margin-top: 3px;
+    }
+    
+    .indicator-values {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.7);
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      color: #eee;
+      display: none;
+    }
+    
+    .external-links {
+      margin-top: 10px;
+    }
+    
+    .external-link {
+      display: block;
+      color: #4fc3f7;
+      text-decoration: none;
+      font-size: 11px;
+      margin-bottom: 5px;
+      padding: 5px;
+      background: #2a2a2a;
+      border-radius: 3px;
+      transition: background 0.2s;
+    }
+    
+    .external-link:hover {
+      background: #333;
+    }
+    
+    .loading-indicator {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #26a69a;
+      font-size: 16px;
+      display: none;
+    }
+    
+    @media (max-width: 768px) {
+      .main-container {
+        flex-direction: column;
+      }
+      
+      .sidebar {
+        width: 100%;
+        height: 200px;
+        order: 2;
+      }
+      
+      .chart-area {
+        order: 1;
+        height: calc(100vh - 280px);
+      }
+      
+      .controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .control-group {
+        margin-right: 0;
+        margin-bottom: 5px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🚀 Bitcoin Chart Academy</h1>
+  </div>
+  
+  <div class="main-container">
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <h3>📊 Chart Patterns</h3>
+        <div id="patterns-list"></div>
+      </div>
+      
+      <div class="sidebar-section">
+        <h3>📚 Trading Glossary</h3>
+        <div id="glossary-list"></div>
+      </div>
+      
+      <div class="sidebar-section">
+        <h3>🔗 Learning Resources</h3>
+        <div class="external-links">
+          <a href="https://www.investopedia.com/technical-analysis-4689657" target="_blank" class="external-link">📖 Technical Analysis Guide</a>
+          <a href="https://www.tradingview.com/chart/" target="_blank" class="external-link">📈 TradingView Charts</a>
+          <a href="https://academy.binance.com/en/articles/a-complete-guide-to-cryptocurrency-trading-for-beginners" target="_blank" class="external-link">🎓 Binance Academy</a>
+          <a href="https://www.youtube.com/watch?v=8T_cOGGl8kE" target="_blank" class="external-link">🎥 Candlestick Patterns Video</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="chart-area">
+      <div class="controls">
+        <div class="control-group">
+          <label>Timeframe:</label>
+          <select id="timeframe-select">
+            <option value="1m">1 Minute</option>
+            <option value="5m">5 Minutes</option>
+            <option value="15m">15 Minutes</option>
+            <option value="1h" selected>1 Hour</option>
+            <option value="4h">4 Hours</option>
+            <option value="1d">1 Day</option>
+          </select>
+        </div>
+        
+        <div class="control-group">
+          <label>Candle Color:</label>
+          <input type="color" id="bull-color" value="#26a69a" title="Bullish Candle Color">
+          <input type="color" id="bear-color" value="#ef5350" title="Bearish Candle Color">
+        </div>
+        
+        <button class="btn" id="toggle-patterns">📍 Patterns</button>
+        <button class="btn" id="toggle-ma">📈 Moving Averages</button>
+        <button class="btn" id="toggle-volume">📊 Volume</button>
+        <button class="btn" id="toggle-rsi">⚡ RSI</button>
+        <button class="btn" id="toggle-macd">🌊 MACD</button>
+        <button class="btn" id="toggle-bollinger">📏 Bollinger Bands</button>
+        <button class="btn quiz-mode" id="quiz-mode-btn">🎯 Quiz Mode</button>
+        <button class="btn" id="toggle-trading">💰 Paper Trading</button>
+        <button class="btn" id="save-settings">💾 Save Settings</button>
+        <button class="btn" id="refresh-data">🔄 Refresh Data</button>
+      </div>
+      
+      <div id="chart-container">
+        <div id="chart"></div>
+        <div class="loading-indicator" id="loading-indicator">Loading chart data...</div>
+        <div class="tooltip" id="tooltip"></div>
+        <div class="indicator-values" id="indicator-values"></div>
+      </div>
+      
+      <div class="trading-panel" id="trading-panel">
+        <div class="trading-controls">
+          <div class="balance-display">Balance: $<span id="balance">10000</span></div>
+          <div class="position-display">Position: <span id="position">None</span></div>
+          <button class="btn" id="buy-btn">🟢 Buy</button>
+          <button class="btn" id="sell-btn">🔴 Sell</button>
+          <button class="btn" id="close-position-btn">❌ Close Position</button>
+        </div>
+        <div class="position-display">P&L: $<span id="pnl">0</span></div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="quiz-overlay" id="quiz-overlay">
+    <div class="quiz-panel">
+      <div class="quiz-question" id="quiz-question"></div>
+      <div class="quiz-options" id="quiz-options"></div>
+      <button class="btn" id="next-quiz">Next Question</button>
+      <button class="btn" id="exit-quiz">Exit Quiz</button>
+    </div>
+  </div>
+
+  <script>
+    // Enhanced Bitcoin Chart Academy
+    class BitcoinChartAcademy {
+      constructor() {
+        this.chart = null;
+        this.candleSeries = null;
+        this.volumeSeries = null;
+        this.ma50Series = null;
+        this.ma200Series = null;
+        this.rsiSeries = null;
+        this.macdSeries = null;
+        this.bollingerUpperSeries = null;
+        this.bollingerLowerSeries = null;
+        
+        this.candlesData = [];
+        this.patterns = [];
+        this.quizMode = false;
+        this.currentQuiz = null;
+        this.settings = this.loadSettings();
+        
+        // Paper trading
+        this.balance = 10000;
+        this.position = null;
+        this.entryPrice = 0;
+        
+        this.init();
+      }
+      
+      init() {
+        this.setupChart();
+        this.setupEventListeners();
+        this.loadPatternDefinitions();
+        this.loadGlossary();
+        this.applySettings();
+        this.fetchData();
+      }
+      
+      setupChart() {
+        const chartEl = document.getElementById('chart');
+        
+        this.chart = LightweightCharts.createChart(chartEl, {
+          width: chartEl.offsetWidth,
+          height: chartEl.offsetHeight,
+          layout: {
+            background: { color: '#111' },
+            textColor: '#ccc'
+          },
+          grid: {
+            vertLines: { color: '#222' },
+            horzLines: { color: '#222' }
+          },
+          timeScale: {
+            timeVisible: true,
+            barSpacing: 8,
+            minBarSpacing: 4
+          },
+          crosshair: {
+            mode: 1,
+            vertLine: {
+              width: 1,
+              color: 'rgba(255,255,255,0.3)',
+              style: 1
+            },
+            horzLine: {
+              width: 1,
+              color: 'rgba(255,255,255,0.3)',
+              style: 1
+            }
+          }
+        });
+        
+        // Main candlestick series
+        this.candleSeries = this.chart.addCandlestickSeries({
+          upColor: this.settings.bullColor || '#26a69a',
+          downColor: this.settings.bearColor || '#ef5350',
+          borderUpColor: this.settings.bullColor || '#26a69a',
+          borderDownColor: this.settings.bearColor || '#ef5350',
+          wickUpColor: this.settings.bullColor || '#26a69a',
+          wickDownColor: this.settings.bearColor || '#ef5350'
+        });
+        
+        // Volume series
+        this.volumeSeries = this.chart.addHistogramSeries({
+          color: '#666',
+          priceFormat: { type: 'volume' },
+          priceScaleId: 'volume',
+          scaleMargins: { top: 0.8, bottom: 0 }
+        });
+        
+        // Moving averages
+        this.ma50Series = this.chart.addLineSeries({
+          color: '#3498db',
+          lineWidth: 2,
+          crossHairMarkerVisible: false,
+          lastValueVisible: false
+        });
+        
+        this.ma200Series = this.chart.addLineSeries({
+          color: '#e74c3c',
+          lineWidth: 2,
+          crossHairMarkerVisible: false,
+          lastValueVisible: false
+        });
+        
+        // RSI series (separate pane)
+        this.rsiSeries = this.chart.addLineSeries({
+          color: '#ff9800',
+          lineWidth: 1,
+          priceScaleId: 'rsi',
+          scaleMargins: { top: 0.1, bottom: 0.8 }
+        });
+        
+        // MACD series
+        this.macdSeries = this.chart.addLineSeries({
+          color: '#9c27b0',
+          lineWidth: 1,
+          priceScaleId: 'macd',
+          scaleMargins: { top: 0.6, bottom: 0.1 }
+        });
+        
+        // Bollinger Bands
+        this.bollingerUpperSeries = this.chart.addLineSeries({
+          color: 'rgba(255, 193, 7, 0.5)',
+          lineWidth: 1,
+          crossHairMarkerVisible: false
+        });
+        
+        this.bollingerLowerSeries = this.chart.addLineSeries({
+          color: 'rgba(255, 193, 7, 0.5)',
+          lineWidth: 1,
+          crossHairMarkerVisible: false
+        });
+        
+        // Chart event listeners
+        this.chart.subscribeCrosshairMove(this.onCrosshairMove.bind(this));
+        this.chart.subscribeClick(this.onChartClick.bind(this));
+        
+        // Hide indicators initially
+        this.toggleIndicator('ma', false);
+        this.toggleIndicator('volume', false);
+        this.toggleIndicator('rsi', false);
+        this.toggleIndicator('macd', false);
+        this.toggleIndicator('bollinger', false);
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+          this.chart.applyOptions({
+            width: chartEl.offsetWidth,
+            height: chartEl.offsetHeight
+          });
+        });
+      }
+      
+      setupEventListeners() {
+        // Timeframe selection
+        document.getElementById('timeframe-select').addEventListener('change', (e) => {
+          this.settings.timeframe = e.target.value;
+          this.fetchData();
+        });
+        
+        // Color customization
+        document.getElementById('bull-color').addEventListener('change', (e) => {
+          this.settings.bullColor = e.target.value;
+          this.updateCandleColors();
+        });
+        
+        document.getElementById('bear-color').addEventListener('change', (e) => {
+          this.settings.bearColor = e.target.value;
+          this.updateCandleColors();
+        });
+        
+        // Toggle buttons
+        document.getElementById('toggle-patterns').addEventListener('click', () => {
+          this.togglePatterns();
+        });
+        
+        document.getElementById('toggle-ma').addEventListener('click', () => {
+          this.toggleIndicator('ma');
+        });
+        
+        document.getElementById('toggle-volume').addEventListener('click', () => {
+          this.toggleIndicator('volume');
+        });
+        
+        document.getElementById('toggle-rsi').addEventListener('click', () => {
+          this.toggleIndicator('rsi');
+        });
+        
+        document.getElementById('toggle-macd').addEventListener('click', () => {
+          this.toggleIndicator('macd');
+        });
+        
+        document.getElementById('toggle-bollinger').addEventListener('click', () => {
+          this.toggleIndicator('bollinger');
+        });
+        
+        // Quiz mode
+        document.getElementById('quiz-mode-btn').addEventListener('click', () => {
+          this.toggleQuizMode();
+        });
+        
+        document.getElementById('next-quiz').addEventListener('click', () => {
+          this.nextQuizQuestion();
+        });
+        
+        document.getElementById('exit-quiz').addEventListener('click', () => {
+          this.exitQuizMode();
+        });
+        
+        // Paper trading
+        document.getElementById('toggle-trading').addEventListener('click', () => {
+          this.toggleTradingPanel();
+        });
+        
+        document.getElementById('buy-btn').addEventListener('click', () => {
+          this.executeTrade('buy');
+        });
+        
+        document.getElementById('sell-btn').addEventListener('click', () => {
+          this.executeTrade('sell');
+        });
+        
+        document.getElementById('close-position-btn').addEventListener('click', () => {
+          this.closePosition();
+        });
+        
+        // Save settings
+        document.getElementById('save-settings').addEventListener('click', () => {
+          this.saveSettings();
+        });
+        
+        // Refresh data
+        document.getElementById('refresh-data').addEventListener('click', () => {
+          this.fetchData();
+        });
+      }
+      
+      async fetchData() {
+        try {
+          this.showLoading(true);
+          const timeframe = this.settings.timeframe || '1h';
+          const response = await fetch(`https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=${timeframe}&limit=500`);
+          const data = await response.json();
+          
+          this.candlesData = data.map(d => ({
+            time: Math.floor(d[0] / 1000),
+            open: parseFloat(d[1]),
+            high: parseFloat(d[2]),
+            low: parseFloat(d[3]),
+            close: parseFloat(d[4]),
+            volume: parseFloat(d[5])
+          }));
+          
+          this.updateChart();
+          this.detectPatterns();
+          this.calculateIndicators();
+          this.showLoading(false);
+          
+        } catch (error) {
+          console.error('Error fetching data:', error);
+          this.showLoading(false);
+          alert('Failed to load chart data. Please check your internet connection and try again.');
+        }
+      }
+      
+      showLoading(show) {
+        const loadingIndicator = document.getElementById('loading-indicator');
+        loadingIndicator.style.display = show ? 'block' : 'none';
+      }
+      
+      updateChart() {
+        this.candleSeries.setData(this.candlesData);
+        
+        // Volume data
+        const volumeData = this.candlesData.map(c => ({
+          time: c.time,
+          value: c.volume,
+          color: c.close > c.open ? 'rgba(38, 166, 154, 0.5)' : 'rgba(239, 83, 80, 0.5)'
+        }));
+        this.volumeSeries.setData(volumeData);
+      }
+      
+      calculateIndicators() {
+        // Moving Averages
+        const ma50 = this.calculateMA(this.candlesData, 50);
+        const ma200 = this.calculateMA(this.candlesData, 200);
+        this.ma50Series.setData(ma50);
+        this.ma200Series.setData(ma200);
+        
+        // RSI
+        const rsi = this.calculateRSI(this.candlesData, 14);
+        this.rsiSeries.setData(rsi);
+        
+        // MACD
+        const macd = this.calculateMACD(this.candlesData);
+        this.macdSeries.setData(macd);
+        
+        // Bollinger Bands
+        const bollinger = this.calculateBollingerBands(this.candlesData, 20, 2);
+        this.bollingerUpperSeries.setData(bollinger.upper);
+        this.bollingerLowerSeries.setData(bollinger.lower);
+      }
+      
+      calculateMA(data, period) {
+        return data.map((candle, index) => {
+          if (index < period - 1) return { time: candle.time, value: null };
+          const sum = data.slice(index - period + 1, index + 1).reduce((a, b) => a + b.close, 0);
+          return { time: candle.time, value: sum / period };
+        }).filter(item => item.value !== null);
+      }
+      
+      calculateRSI(data, period) {
+        const rsi = [];
+        let gains = 0;
+        let losses = 0;
+        
+        for (let i = 1; i < data.length; i++) {
+          const change = data[i].close - data[i - 1].close;
+          
+          if (i <= period) {
+            if (change > 0) gains += change;
+            else losses -= change;
+            
+            if (i === period) {
+              const avgGain = gains / period;
+              const avgLoss = losses / period;
+              const rs = avgGain / avgLoss;
+              const rsiValue = 100 - (100 / (1 + rs));
+              rsi.push({ time: data[i].time, value: rsiValue });
+            }
+          } else {
+            const prevAvgGain = gains / period;
+            const prevAvgLoss = losses / period;
+            
+            const currentGain = change > 0 ? change : 0;
+            const currentLoss = change < 0 ? -change : 0;
+            
+            const avgGain = (prevAvgGain * (period - 1) + currentGain) / period;
+            const avgLoss = (prevAvgLoss * (period - 1) + currentLoss) / period;
+            
+            const rs = avgGain / avgLoss;
+            const rsiValue = 100 - (100 / (1 + rs));
+            rsi.push({ time: data[i].time, value: rsiValue });
+            
+            gains = avgGain * period;
+            losses = avgLoss * period;
+          }
+        }
+        
+        return rsi;
+      }
+      
+      calculateMACD(data) {
+        const ema12 = this.calculateEMA(data, 12);
+        const ema26 = this.calculateEMA(data, 26);
+        
+        const macd = [];
+        for (let i = 0; i < Math.min(ema12.length, ema26.length); i++) {
+          if (ema12[i].value !== null && ema26[i].value !== null) {
+            macd.push({
+              time: ema12[i].time,
+              value: ema12[i].value - ema26[i].value
+            });
+          }
+        }
+        
+        return macd;
+      }
+      
+      calculateEMA(data, period) {
+        const ema = [];
+        const multiplier = 2 / (period + 1);
+        
+        for (let i = 0; i < data.length; i++) {
+          if (i === 0) {
+            ema.push({ time: data[i].time, value: data[i].close });
+          } else {
+            const value = (data[i].close - ema[i - 1].value) * multiplier + ema[i - 1].value;
+            ema.push({ time: data[i].time, value });
+          }
+        }
+        
+        return ema;
+      }
+      
+      calculateBollingerBands(data, period, stdDev) {
+        const sma = this.calculateMA(data, period);
+        const upper = [];
+        const lower = [];
+        
+        for (let i = period - 1; i < data.length; i++) {
+          const slice = data.slice(i - period + 1, i + 1);
+          const mean = slice.reduce((sum, candle) => sum + candle.close, 0) / period;
+          const variance = slice.reduce((sum, candle) => sum + Math.pow(candle.close - mean, 2), 0) / period;
+          const standardDeviation = Math.sqrt(variance);
+          
+          upper.push({
+            time: data[i].time,
+            value: mean + (standardDeviation * stdDev)
+          });
+          
+          lower.push({
+            time: data[i].time,
+            value: mean - (standardDeviation * stdDev)
+          });
+        }
+        
+        return { upper, lower };
+      }
+      
+      detectPatterns() {
+        this.patterns = [];
+        
+        for (let i = 2; i < this.candlesData.length - 1; i++) {
+          const prev = this.candlesData[i - 1];
+          const curr = this.candlesData[i];
+          const next = this.candlesData[i + 1];
+          
+          // Pattern detection logic
+          this.detectDoji(curr, i);
+          this.detectEngulfing(prev, curr, i);
+          this.detectHammer(curr, i);
+          this.detectShootingStar(curr, i);
+        }
+        
+        this.updatePatternMarkers();
+      }
+      
+      detectDoji(candle, index) {
+        const bodySize = Math.abs(candle.close - candle.open);
+        const candleSize = candle.high - candle.low;
+        
+        if (bodySize < 0.1 * candleSize && candleSize > 0) {
+          this.patterns.push({
+            type: 'doji',
+            time: candle.time,
+            index: index,
+            position: 'aboveBar',
+            color: '#ffff00',
+            shape: 'circle',
+            text: 'Doji'
+          });
+        }
+      }
+      
+      detectEngulfing(prev, curr, index) {
+        const prevBull = prev.close > prev.open;
+        const prevBear = prev.open > prev.close;
+        const currBull = curr.close > curr.open;
+        const currBear = curr.open > curr.close;
+        
+        // Bullish engulfing
+        if (prevBear && currBull && curr.close > prev.open && curr.open < prev.close) {
+          this.patterns.push({
+            type: 'bullish_engulfing',
+            time: curr.time,
+            index: index,
+            position: 'belowBar',
+            color: '#00ff00',
+            shape: 'arrowUp',
+            text: 'Bullish Engulfing'
+          });
+        }
+        
+        // Bearish engulfing
+        if (prevBull && currBear && curr.open > prev.close && curr.close < prev.open) {
+          this.patterns.push({
+            type: 'bearish_engulfing',
+            time: curr.time,
+            index: index,
+            position: 'aboveBar',
+            color: '#ff4444',
+            shape: 'arrowDown',
+            text: 'Bearish Engulfing'
+          });
+        }
+      }
+      
+      detectHammer(candle, index) {
+        const bodySize = Math.abs(candle.close - candle.open);
+        const candleSize = candle.high - candle.low;
+        const lowerWick = Math.min(candle.open, candle.close) - candle.low;
+        
+        if (bodySize < candleSize * 0.3 && lowerWick >= bodySize * 2) {
+          this.patterns.push({
+            type: 'hammer',
+            time: candle.time,
+            index: index,
+            position: 'belowBar',
+            color: '#00ff00',
+            shape: 'arrowUp',
+            text: 'Hammer'
+          });
+        }
+      }
+      
+      detectShootingStar(candle, index) {
+        const bodySize = Math.abs(candle.close - candle.open);
+        const candleSize = candle.high - candle.low;
+        const upperWick = candle.high - Math.max(candle.open, candle.close);
+        
+        if (bodySize < candleSize * 0.3 && upperWick >= bodySize * 2) {
+          this.patterns.push({
+            type: 'shooting_star',
+            time: candle.time,
+            index: index,
+            position: 'aboveBar',
+            color: '#ff4444',
+            shape: 'arrowDown',
+            text: 'Shooting Star'
+          });
+        }
+      }
+      
+      updatePatternMarkers() {
+        if (this.settings.showPatterns) {
+          this.candleSeries.setMarkers(this.patterns);
+        } else {
+          this.candleSeries.setMarkers([]);
+        }
+      }
+      
+      loadPatternDefinitions() {
+        const patterns = [
+          {
+            name: 'Doji',
+            type: 'doji',
+            description: 'A candle where open and close are nearly equal, showing indecision in the market.',
+            psychology: 'Neither bulls nor bears are in control. Often signals a potential reversal when found at key levels.',
+            confirmation: 'Look for volume increase and follow-through in the next candle.',
+            examples: 'Often appears at market tops and bottoms before significant reversals.'
+          },
+          {
+            name: 'Bullish Engulfing',
+            type: 'bullish_engulfing',
+            description: 'A green candle completely engulfs the previous red candle.',
+            psychology: 'Bulls have overwhelmed the bears, showing strong buying pressure.',
+            confirmation: 'Higher volume and continuation of upward movement.',
+            examples: 'Frequently seen at the end of downtrends, signaling potential reversal.'
+          },
+          {
+            name: 'Bearish Engulfing',
+            type: 'bearish_engulfing',
+            description: 'A red candle completely engulfs the previous green candle.',
+            psychology: 'Bears have overwhelmed the bulls, showing strong selling pressure.',
+            confirmation: 'Higher volume and continuation of downward movement.',
+            examples: 'Often appears at market tops, indicating potential trend reversal.'
+          },
+          {
+            name: 'Hammer',
+            type: 'hammer',
+            description: 'A candle with a small body and long lower wick, appearing after a downtrend.',
+            psychology: 'Sellers pushed price down but buyers stepped in, showing potential support.',
+            confirmation: 'Next candle should close above the hammer\'s high.',
+            examples: 'Effective reversal signal when found at key support levels.'
+          },
+          {
+            name: 'Shooting Star',
+            type: 'shooting_star',
+            description: 'A candle with a small body and long upper wick, appearing after an uptrend.',
+            psychology: 'Buyers pushed price up but sellers stepped in, showing potential resistance.',
+            confirmation: 'Next candle should close below the shooting star\'s low.',
+            examples: 'Strong reversal signal when found at key resistance levels.'
+          }
+        ];
+        
+        const patternsList = document.getElementById('patterns-list');
+        patternsList.innerHTML = '';
+        
+        patterns.forEach(pattern => {
+          const patternDiv = document.createElement('div');
+          patternDiv.className = 'pattern-info';
+          patternDiv.dataset.type = pattern.type;
+          
+          patternDiv.innerHTML = `
+            <div class="pattern-title">${pattern.name}</div>
+            <div class="pattern-description">${pattern.description}</div>
+            <div class="pattern-psychology"><strong>Psychology:</strong> ${pattern.psychology}</div>
+            <div class="pattern-psychology"><strong>Confirmation:</strong> ${pattern.confirmation}</div>
+            <div class="pattern-psychology"><strong>Examples:</strong> ${pattern.examples}</div>
+          `;
+          
+          patternDiv.addEventListener('click', () => {
+            this.highlightPattern(pattern.type);
+          });
+          
+          patternsList.appendChild(patternDiv);
+        });
+      }
+      
+      loadGlossary() {
+        const glossaryTerms = [
+          { term: 'Bull Market', definition: 'A market characterized by rising prices and optimistic sentiment.' },
+          { term: 'Bear Market', definition: 'A market characterized by falling prices and pessimistic sentiment.' },
+          { term: 'Support', definition: 'A price level where buying interest is strong enough to prevent further decline.' },
+          { term: 'Resistance', definition: 'A price level where selling interest is strong enough to prevent further advance.' },
+          { term: 'Volume', definition: 'The number of shares or contracts traded during a specific period.' },
+          { term: 'Volatility', definition: 'The degree of price fluctuation in a security or market.' },
+          { term: 'Liquidity', definition: 'The ease with which an asset can be bought or sold without affecting its price.' },
+          { term: 'Trend', definition: 'The general direction of price movement over time.' },
+          { term: 'Breakout', definition: 'When price moves beyond a defined support or resistance level.' },
+          { term: 'Reversal', definition: 'A change in the direction of a price trend.' }
+        ];
+        
+        const glossaryList = document.getElementById('glossary-list');
+        glossaryList.innerHTML = '';
+        
+        glossaryTerms.forEach(item => {
+          const termDiv = document.createElement('div');
+          termDiv.className = 'glossary-term';
+          termDiv.innerHTML = `
+            <div class="glossary-term-name">${item.term}</div>
+            <div class="glossary-term-definition">${item.definition}</div>
+          `;
+          glossaryList.appendChild(termDiv);
+        });
+      }
+      
+      highlightPattern(patternType) {
+        // Remove previous highlights
+        document.querySelectorAll('.pattern-info').forEach(el => {
+          el.classList.remove('highlighted');
+        });
+        
+        // Highlight selected pattern
+        const patternElement = document.querySelector(`[data-type="${patternType}"]`);
+        if (patternElement) {
+          patternElement.classList.add('highlighted');
+          patternElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        
+        // Highlight patterns on chart
+        const filteredPatterns = this.patterns.filter(p => p.type === patternType);
+        this.candleSeries.setMarkers(filteredPatterns);
+        
+        // Reset after 3 seconds
+        setTimeout(() => {
+          this.updatePatternMarkers();
+          patternElement?.classList.remove('highlighted');
+        }, 3000);
+      }
+      
+      togglePatterns() {
+        this.settings.showPatterns = !this.settings.showPatterns;
+        this.updatePatternMarkers();
+        this.updateButtonState('toggle-patterns', this.settings.showPatterns);
+      }
+      
+      toggleIndicator(indicator, forceState = null) {
+        const state = forceState !== null ? forceState : !this.settings[`show${indicator.charAt(0).toUpperCase() + indicator.slice(1)}`];
+        this.settings[`show${indicator.charAt(0).toUpperCase() + indicator.slice(1)}`] = state;
+        
+        switch (indicator) {
+          case 'ma':
+            this.ma50Series.applyOptions({ visible: state });
+            this.ma200Series.applyOptions({ visible: state });
+            break;
+          case 'volume':
+            this.volumeSeries.applyOptions({ visible: state });
+            break;
+          case 'rsi':
+            this.rsiSeries.applyOptions({ visible: state });
+            break;
+          case 'macd':
+            this.macdSeries.applyOptions({ visible: state });
+            break;
+          case 'bollinger':
+            this.bollingerUpperSeries.applyOptions({ visible: state });
+            this.bollingerLowerSeries.applyOptions({ visible: state });
+            break;
+        }
+        
+        this.updateButtonState(`toggle-${indicator}`, state);
+      }
+      
+      updateButtonState(buttonId, active) {
+        const button = document.getElementById(buttonId);
+        if (active) {
+          button.classList.add('active');
+        } else {
+          button.classList.remove('active');
+        }
+      }
+      
+      updateCandleColors() {
+        this.candleSeries.applyOptions({
+          upColor: this.settings.bullColor,
+          downColor: this.settings.bearColor,
+          borderUpColor: this.settings.bullColor,
+          borderDownColor: this.settings.bearColor,
+          wickUpColor: this.settings.bullColor,
+          wickDownColor: this.settings.bearColor
+        });
+      }
+      
+      toggleQuizMode() {
+        this.quizMode = !this.quizMode;
+        
+        if (this.quizMode) {
+          this.startQuiz();
+        } else {
+          this.exitQuizMode();
+        }
+      }
+      
+      startQuiz() {
+        document.getElementById('quiz-overlay').style.display = 'flex';
+        this.nextQuizQuestion();
+      }
+      
+      nextQuizQuestion() {
+        const quizPatterns = this.patterns.filter(p => ['doji', 'bullish_engulfing', 'bearish_engulfing', 'hammer', 'shooting_star'].includes(p.type));
+        
+        if (quizPatterns.length === 0) {
+          alert('No patterns found for quiz. Please wait for data to load.');
+          return;
+        }
+        
+        const randomPattern = quizPatterns[Math.floor(Math.random() * quizPatterns.length)];
+        this.currentQuiz = randomPattern;
+        
+        // Highlight the pattern on chart
+        this.candleSeries.setMarkers([randomPattern]);
+        
+        // Create quiz question
+        const options = ['Doji', 'Bullish Engulfing', 'Bearish Engulfing', 'Hammer', 'Shooting Star'];
+        const correctAnswer = this.getPatternDisplayName(randomPattern.type);
+        
+        // Shuffle options
+        const shuffledOptions = [...options].sort(() => Math.random() - 0.5);
+        
+        document.getElementById('quiz-question').textContent = `What pattern is highlighted on the chart?`;
+        
+        const optionsContainer = document.getElementById('quiz-options');
+        optionsContainer.innerHTML = '';
+        
+        shuffledOptions.forEach(option => {
+          const optionDiv = document.createElement('div');
+          optionDiv.className = 'quiz-option';
+          optionDiv.textContent = option;
+          optionDiv.addEventListener('click', () => this.checkQuizAnswer(option, correctAnswer));
+          optionsContainer.appendChild(optionDiv);
+        });
+      }
+      
+      checkQuizAnswer(selected, correct) {
+        const options = document.querySelectorAll('.quiz-option');
+        options.forEach(option => {
+          if (option.textContent === correct) {
+            option.classList.add('correct');
+          } else if (option.textContent === selected && selected !== correct) {
+            option.classList.add('incorrect');
+          }
+          option.style.pointerEvents = 'none';
+        });
+        
+        setTimeout(() => {
+          options.forEach(option => {
+            option.classList.remove('correct', 'incorrect');
+            option.style.pointerEvents = 'auto';
+          });
+        }, 2000);
+      }
+      
+      getPatternDisplayName(type) {
+        const names = {
+          'doji': 'Doji',
+          'bullish_engulfing': 'Bullish Engulfing',
+          'bearish_engulfing': 'Bearish Engulfing',
+          'hammer': 'Hammer',
+          'shooting_star': 'Shooting Star'
+        };
+        return names[type] || type;
+      }
+      
+      exitQuizMode() {
+        this.quizMode = false;
+        document.getElementById('quiz-overlay').style.display = 'none';
+        this.updatePatternMarkers();
+      }
+      
+      toggleTradingPanel() {
+        const panel = document.getElementById('trading-panel');
+        const isVisible = panel.style.display === 'block';
+        panel.style.display = isVisible ? 'none' : 'block';
+        this.updateButtonState('toggle-trading', !isVisible);
+        
+        if (!isVisible) {
+          this.updateTradingDisplay();
+        }
+      }
+      
+      executeTrade(type) {
+        if (!this.candlesData.length) return;
+        
+        const currentPrice = this.candlesData[this.candlesData.length - 1].close;
+        
+        if (type === 'buy' && !this.position) {
+          this.position = 'long';
+          this.entryPrice = currentPrice;
+        } else if (type === 'sell' && !this.position) {
+          this.position = 'short';
+          this.entryPrice = currentPrice;
+        }
+        
+        this.updateTradingDisplay();
+      }
+      
+      closePosition() {
+        if (!this.position || !this.candlesData.length) return;
+        
+        const currentPrice = this.candlesData[this.candlesData.length - 1].close;
+        let pnl = 0;
+        
+        if (this.position === 'long') {
+          pnl = currentPrice - this.entryPrice;
+        } else if (this.position === 'short') {
+          pnl = this.entryPrice - currentPrice;
+        }
+        
+        this.balance += pnl;
+        this.position = null;
+        this.entryPrice = 0;
+        
+        this.updateTradingDisplay();
+      }
+      
+      updateTradingDisplay() {
+        document.getElementById('balance').textContent = this.balance.toFixed(2);
+        document.getElementById('position').textContent = this.position || 'None';
+        
+        if (this.position && this.candlesData.length) {
+          const currentPrice = this.candlesData[this.candlesData.length - 1].close;
+          let pnl = 0;
+          
+          if (this.position === 'long') {
+            pnl = currentPrice - this.entryPrice;
+          } else if (this.position === 'short') {
+            pnl = this.entryPrice - currentPrice;
+          }
+          
+          document.getElementById('pnl').textContent = pnl.toFixed(2);
+          document.getElementById('pnl').style.color = pnl >= 0 ? '#4caf50' : '#f44336';
+        } else {
+          document.getElementById('pnl').textContent = '0';
+          document.getElementById('pnl').style.color = '#ccc';
+        }
+      }
+      
+      onCrosshairMove(param) {
+        if (!param.point) {
+          document.getElementById('tooltip').style.display = 'none';
+          document.getElementById('indicator-values').style.display = 'none';
+          return;
+        }
+        
+        // Show pattern tooltip
+        const pattern = this.patterns.find(p => p.time === param.time);
+        if (pattern) {
+          this.showTooltip(pattern.text, param.point.x, param.point.y);
+        } else {
+          document.getElementById('tooltip').style.display = 'none';
+        }
+        
+        // Show indicator values
+        this.showIndicatorValues(param);
+      }
+      
+      onChartClick(param) {
+        if (!param.time) return;
+        
+        const pattern = this.patterns.find(p => p.time === param.time);
+        if (pattern) {
+          this.highlightPattern(pattern.type);
+        }
+      }
+      
+      showTooltip(text, x, y) {
+        const tooltip = document.getElementById('tooltip');
+        tooltip.textContent = text;
+        tooltip.style.left = `${x + 10}px`;
+        tooltip.style.top = `${y + 10}px`;
+        tooltip.style.display = 'block';
+      }
+      
+      showIndicatorValues(param) {
+        const indicatorValues = document.getElementById('indicator-values');
+        
+        if (this.settings.showRsi || this.settings.showMacd) {
+          let content = '';
+          
+          if (this.settings.showRsi) {
+            // Find RSI value for current time
+            const rsiData = this.rsiSeries.data();
+            const rsiValue = rsiData.find(d => d.time === param.time);
+            if (rsiValue) {
+              content += `RSI: ${rsiValue.value.toFixed(2)}<br>`;
+            }
+          }
+          
+          if (this.settings.showMacd) {
+            // Find MACD value for current time
+            const macdData = this.macdSeries.data();
+            const macdValue = macdData.find(d => d.time === param.time);
+            if (macdValue) {
+              content += `MACD: ${macdValue.value.toFixed(4)}<br>`;
+            }
+          }
+          
+          if (content) {
+            indicatorValues.innerHTML = content;
+            indicatorValues.style.display = 'block';
+          }
+        } else {
+          indicatorValues.style.display = 'none';
+        }
+      }
+      
+      saveSettings() {
+        localStorage.setItem('bitcoinChartSettings', JSON.stringify(this.settings));
+        alert('Settings saved successfully!');
+      }
+      
+      loadSettings() {
+        const saved = localStorage.getItem('bitcoinChartSettings');
+        return saved ? JSON.parse(saved) : {
+          timeframe: '1h',
+          bullColor: '#26a69a',
+          bearColor: '#ef5350',
+          showPatterns: true,
+          showMa: false,
+          showVolume: false,
+          showRsi: false,
+          showMacd: false,
+          showBollinger: false
+        };
+      }
+      
+      applySettings() {
+        // Apply timeframe
+        document.getElementById('timeframe-select').value = this.settings.timeframe;
+        
+        // Apply colors
+        document.getElementById('bull-color').value = this.settings.bullColor;
+        document.getElementById('bear-color').value = this.settings.bearColor;
+        
+        // Apply button states
+        this.updateButtonState('toggle-patterns', this.settings.showPatterns);
+        this.updateButtonState('toggle-ma', this.settings.showMa);
+        this.updateButtonState('toggle-volume', this.settings.showVolume);
+        this.updateButtonState('toggle-rsi', this.settings.showRsi);
+        this.updateButtonState('toggle-macd', this.settings.showMacd);
+        this.updateButtonState('toggle-bollinger', this.settings.showBollinger);
+      }
+    }
+    
+    // Initialize the application
+    document.addEventListener('DOMContentLoaded', () => {
+      window.chartAcademy = new BitcoinChartAcademy();
+    });
+  </script>
+</body>
+</html>
+
