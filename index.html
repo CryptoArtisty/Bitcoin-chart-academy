@@ -113,6 +113,10 @@
       background: #ff8c42;
     }
     
+    .btn.trading-active {
+      background: #4caf50;
+    }
+    
     #chart-container {
       flex: 1;
       position: relative;
@@ -154,7 +158,7 @@
       padding-bottom: 5px;
     }
     
-    .pattern-info {
+    .pattern-info, .indicator-info {
       margin-bottom: 15px;
       padding: 10px;
       background: #2a2a2a;
@@ -164,29 +168,29 @@
       transition: all 0.2s;
     }
     
-    .pattern-info:hover {
+    .pattern-info:hover, .indicator-info:hover {
       background: #333;
     }
     
-    .pattern-info.highlighted {
+    .pattern-info.highlighted, .indicator-info.highlighted {
       background: #1a4a47;
       border-left-color: #4fc3f7;
     }
     
-    .pattern-title {
+    .pattern-title, .indicator-title {
       font-weight: bold;
       color: #4fc3f7;
       margin-bottom: 5px;
       font-size: 13px;
     }
     
-    .pattern-description {
+    .pattern-description, .indicator-description {
       font-size: 12px;
       line-height: 1.4;
       color: #ccc;
     }
     
-    .pattern-psychology {
+    .pattern-psychology, .indicator-usage {
       font-size: 11px;
       color: #999;
       margin-top: 5px;
@@ -264,16 +268,48 @@
       gap: 15px;
       align-items: center;
       margin-bottom: 10px;
+      flex-wrap: wrap;
     }
     
     .balance-display {
       font-size: 14px;
       color: #4fc3f7;
+      font-weight: bold;
     }
     
     .position-display {
       font-size: 12px;
       color: #ccc;
+    }
+    
+    .trade-btn {
+      background: #4caf50;
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: bold;
+    }
+    
+    .trade-btn.sell {
+      background: #f44336;
+    }
+    
+    .trade-btn.close {
+      background: #ff9800;
+    }
+    
+    .trade-btn:hover {
+      opacity: 0.8;
+    }
+    
+    .trade-btn:disabled {
+      background: #666;
+      cursor: not-allowed;
+      opacity: 0.5;
     }
     
     .glossary-term {
@@ -337,6 +373,14 @@
       display: none;
     }
     
+    .pnl-positive {
+      color: #4caf50 !important;
+    }
+    
+    .pnl-negative {
+      color: #f44336 !important;
+    }
+    
     @media (max-width: 768px) {
       .main-container {
         flex-direction: column;
@@ -362,6 +406,12 @@
         margin-right: 0;
         margin-bottom: 5px;
       }
+      
+      .trading-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
     }
   </style>
 </head>
@@ -375,6 +425,11 @@
       <div class="sidebar-section">
         <h3>📊 Chart Patterns</h3>
         <div id="patterns-list"></div>
+      </div>
+      
+      <div class="sidebar-section">
+        <h3>📈 Technical Indicators</h3>
+        <div id="indicators-list"></div>
       </div>
       
       <div class="sidebar-section">
@@ -434,13 +489,17 @@
       
       <div class="trading-panel" id="trading-panel">
         <div class="trading-controls">
-          <div class="balance-display">Balance: $<span id="balance">10000</span></div>
+          <div class="balance-display">Balance: $<span id="balance">10000.00</span></div>
           <div class="position-display">Position: <span id="position">None</span></div>
-          <button class="btn" id="buy-btn">🟢 Buy</button>
-          <button class="btn" id="sell-btn">🔴 Sell</button>
-          <button class="btn" id="close-position-btn">❌ Close Position</button>
+          <div class="position-display">Entry Price: $<span id="entry-price">0.00</span></div>
+          <div class="position-display">P&L: $<span id="pnl">0.00</span></div>
         </div>
-        <div class="position-display">P&L: $<span id="pnl">0</span></div>
+        <div class="trading-controls">
+          <button class="trade-btn" id="buy-btn">🟢 Buy Long</button>
+          <button class="trade-btn sell" id="sell-btn">🔴 Sell Short</button>
+          <button class="trade-btn close" id="close-position-btn" disabled>❌ Close Position</button>
+          <button class="trade-btn" id="reset-trading">🔄 Reset Account</button>
+        </div>
       </div>
     </div>
   </div>
@@ -476,8 +535,10 @@
         
         // Paper trading
         this.balance = 10000;
-        this.position = null;
+        this.position = null; // 'long' or 'short'
         this.entryPrice = 0;
+        this.positionSize = 0;
+        this.tradingActive = false;
         
         this.init();
       }
@@ -486,6 +547,7 @@
         this.setupChart();
         this.setupEventListeners();
         this.loadPatternDefinitions();
+        this.loadIndicatorDefinitions();
         this.loadGlossary();
         this.applySettings();
         this.fetchData();
@@ -669,15 +731,19 @@
         });
         
         document.getElementById('buy-btn').addEventListener('click', () => {
-          this.executeTrade('buy');
+          this.executeTrade('long');
         });
         
         document.getElementById('sell-btn').addEventListener('click', () => {
-          this.executeTrade('sell');
+          this.executeTrade('short');
         });
         
         document.getElementById('close-position-btn').addEventListener('click', () => {
           this.closePosition();
+        });
+        
+        document.getElementById('reset-trading').addEventListener('click', () => {
+          this.resetTradingAccount();
         });
         
         // Save settings
@@ -710,6 +776,7 @@
           this.updateChart();
           this.detectPatterns();
           this.calculateIndicators();
+          this.updateTradingDisplay();
           this.showLoading(false);
           
         } catch (error) {
@@ -1044,6 +1111,66 @@
         });
       }
       
+      loadIndicatorDefinitions() {
+        const indicators = [
+          {
+            name: 'Moving Averages (MA)',
+            type: 'ma',
+            description: 'Smoothed price lines that show the average price over a specific period.',
+            usage: 'MA50 (blue) and MA200 (red) help identify trend direction. When MA50 crosses above MA200, it\'s often bullish.',
+            interpretation: 'Price above MA = uptrend, price below MA = downtrend. Golden cross (50>200) is bullish, death cross (50<200) is bearish.',
+            signals: 'Use for trend confirmation and dynamic support/resistance levels.'
+          },
+          {
+            name: 'RSI (Relative Strength Index)',
+            type: 'rsi',
+            description: 'Momentum oscillator that measures the speed and magnitude of price changes (0-100).',
+            usage: 'RSI above 70 suggests overbought conditions, below 30 suggests oversold conditions.',
+            interpretation: 'Values above 70 may indicate selling opportunity, below 30 may indicate buying opportunity.',
+            signals: 'Look for divergences between price and RSI for potential reversal signals.'
+          },
+          {
+            name: 'MACD (Moving Average Convergence Divergence)',
+            type: 'macd',
+            description: 'Trend-following momentum indicator that shows the relationship between two moving averages.',
+            usage: 'MACD line crossing above zero suggests bullish momentum, below zero suggests bearish momentum.',
+            interpretation: 'Positive MACD = upward momentum, negative MACD = downward momentum.',
+            signals: 'MACD line crossing signal line generates buy/sell signals. Histogram shows momentum strength.'
+          },
+          {
+            name: 'Bollinger Bands',
+            type: 'bollinger',
+            description: 'Volatility bands placed above and below a moving average, expanding and contracting with volatility.',
+            usage: 'Price touching upper band may indicate overbought, touching lower band may indicate oversold.',
+            interpretation: 'Narrow bands = low volatility, wide bands = high volatility. Price tends to bounce between bands.',
+            signals: 'Band squeezes often precede significant price moves. Breakouts above/below bands can signal trend continuation.'
+          }
+        ];
+        
+        const indicatorsList = document.getElementById('indicators-list');
+        indicatorsList.innerHTML = '';
+        
+        indicators.forEach(indicator => {
+          const indicatorDiv = document.createElement('div');
+          indicatorDiv.className = 'indicator-info';
+          indicatorDiv.dataset.type = indicator.type;
+          
+          indicatorDiv.innerHTML = `
+            <div class="indicator-title">${indicator.name}</div>
+            <div class="indicator-description">${indicator.description}</div>
+            <div class="indicator-usage"><strong>Usage:</strong> ${indicator.usage}</div>
+            <div class="indicator-usage"><strong>Interpretation:</strong> ${indicator.interpretation}</div>
+            <div class="indicator-usage"><strong>Signals:</strong> ${indicator.signals}</div>
+          `;
+          
+          indicatorDiv.addEventListener('click', () => {
+            this.highlightIndicator(indicator.type);
+          });
+          
+          indicatorsList.appendChild(indicatorDiv);
+        });
+      }
+      
       loadGlossary() {
         const glossaryTerms = [
           { term: 'Bull Market', definition: 'A market characterized by rising prices and optimistic sentiment.' },
@@ -1055,7 +1182,11 @@
           { term: 'Liquidity', definition: 'The ease with which an asset can be bought or sold without affecting its price.' },
           { term: 'Trend', definition: 'The general direction of price movement over time.' },
           { term: 'Breakout', definition: 'When price moves beyond a defined support or resistance level.' },
-          { term: 'Reversal', definition: 'A change in the direction of a price trend.' }
+          { term: 'Reversal', definition: 'A change in the direction of a price trend.' },
+          { term: 'Long Position', definition: 'Buying an asset expecting its price to rise.' },
+          { term: 'Short Position', definition: 'Selling an asset expecting its price to fall.' },
+          { term: 'Stop Loss', definition: 'An order to sell a security when it reaches a certain price to limit losses.' },
+          { term: 'Take Profit', definition: 'An order to sell a security when it reaches a certain price to secure gains.' }
         ];
         
         const glossaryList = document.getElementById('glossary-list');
@@ -1094,6 +1225,28 @@
           this.updatePatternMarkers();
           patternElement?.classList.remove('highlighted');
         }, 3000);
+      }
+      
+      highlightIndicator(indicatorType) {
+        // Remove previous highlights
+        document.querySelectorAll('.indicator-info').forEach(el => {
+          el.classList.remove('highlighted');
+        });
+        
+        // Highlight selected indicator
+        const indicatorElement = document.querySelector(`[data-type="${indicatorType}"]`);
+        if (indicatorElement) {
+          indicatorElement.classList.add('highlighted');
+          indicatorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          
+          // Temporarily show the indicator
+          this.toggleIndicator(indicatorType, true);
+          
+          // Reset after 5 seconds
+          setTimeout(() => {
+            indicatorElement.classList.remove('highlighted');
+          }, 5000);
+        }
       }
       
       togglePatterns() {
@@ -1236,30 +1389,30 @@
       }
       
       toggleTradingPanel() {
+        this.tradingActive = !this.tradingActive;
         const panel = document.getElementById('trading-panel');
-        const isVisible = panel.style.display === 'block';
-        panel.style.display = isVisible ? 'none' : 'block';
-        this.updateButtonState('toggle-trading', !isVisible);
+        panel.style.display = this.tradingActive ? 'block' : 'none';
+        this.updateButtonState('toggle-trading', this.tradingActive);
         
-        if (!isVisible) {
+        if (this.tradingActive) {
+          document.getElementById('toggle-trading').classList.add('trading-active');
           this.updateTradingDisplay();
+        } else {
+          document.getElementById('toggle-trading').classList.remove('trading-active');
         }
       }
       
       executeTrade(type) {
-        if (!this.candlesData.length) return;
+        if (!this.candlesData.length || this.position) return;
         
         const currentPrice = this.candlesData[this.candlesData.length - 1].close;
         
-        if (type === 'buy' && !this.position) {
-          this.position = 'long';
-          this.entryPrice = currentPrice;
-        } else if (type === 'sell' && !this.position) {
-          this.position = 'short';
-          this.entryPrice = currentPrice;
-        }
+        this.position = type; // 'long' or 'short'
+        this.entryPrice = currentPrice;
+        this.positionSize = Math.floor(this.balance / currentPrice * 0.95); // Use 95% of balance
         
         this.updateTradingDisplay();
+        this.updateTradingButtons();
       }
       
       closePosition() {
@@ -1269,37 +1422,75 @@
         let pnl = 0;
         
         if (this.position === 'long') {
-          pnl = currentPrice - this.entryPrice;
+          pnl = (currentPrice - this.entryPrice) * this.positionSize;
         } else if (this.position === 'short') {
-          pnl = this.entryPrice - currentPrice;
+          pnl = (this.entryPrice - currentPrice) * this.positionSize;
         }
         
         this.balance += pnl;
         this.position = null;
         this.entryPrice = 0;
+        this.positionSize = 0;
         
         this.updateTradingDisplay();
+        this.updateTradingButtons();
+        
+        // Show trade result
+        const result = pnl >= 0 ? 'Profit' : 'Loss';
+        const color = pnl >= 0 ? '#4caf50' : '#f44336';
+        alert(`Position closed! ${result}: $${pnl.toFixed(2)}`);
+      }
+      
+      resetTradingAccount() {
+        this.balance = 10000;
+        this.position = null;
+        this.entryPrice = 0;
+        this.positionSize = 0;
+        
+        this.updateTradingDisplay();
+        this.updateTradingButtons();
+        
+        alert('Trading account reset to $10,000');
       }
       
       updateTradingDisplay() {
         document.getElementById('balance').textContent = this.balance.toFixed(2);
-        document.getElementById('position').textContent = this.position || 'None';
+        document.getElementById('position').textContent = this.position ? this.position.toUpperCase() : 'None';
+        document.getElementById('entry-price').textContent = this.entryPrice.toFixed(2);
         
         if (this.position && this.candlesData.length) {
           const currentPrice = this.candlesData[this.candlesData.length - 1].close;
           let pnl = 0;
           
           if (this.position === 'long') {
-            pnl = currentPrice - this.entryPrice;
+            pnl = (currentPrice - this.entryPrice) * this.positionSize;
           } else if (this.position === 'short') {
-            pnl = this.entryPrice - currentPrice;
+            pnl = (this.entryPrice - currentPrice) * this.positionSize;
           }
           
-          document.getElementById('pnl').textContent = pnl.toFixed(2);
-          document.getElementById('pnl').style.color = pnl >= 0 ? '#4caf50' : '#f44336';
+          const pnlElement = document.getElementById('pnl');
+          pnlElement.textContent = pnl.toFixed(2);
+          pnlElement.className = pnl >= 0 ? 'pnl-positive' : 'pnl-negative';
         } else {
-          document.getElementById('pnl').textContent = '0';
-          document.getElementById('pnl').style.color = '#ccc';
+          const pnlElement = document.getElementById('pnl');
+          pnlElement.textContent = '0.00';
+          pnlElement.className = '';
+        }
+      }
+      
+      updateTradingButtons() {
+        const buyBtn = document.getElementById('buy-btn');
+        const sellBtn = document.getElementById('sell-btn');
+        const closeBtn = document.getElementById('close-position-btn');
+        
+        if (this.position) {
+          buyBtn.disabled = true;
+          sellBtn.disabled = true;
+          closeBtn.disabled = false;
+        } else {
+          buyBtn.disabled = false;
+          sellBtn.disabled = false;
+          closeBtn.disabled = true;
         }
       }
       
@@ -1320,6 +1511,11 @@
         
         // Show indicator values
         this.showIndicatorValues(param);
+        
+        // Update trading display if active
+        if (this.tradingActive) {
+          this.updateTradingDisplay();
+        }
       }
       
       onChartClick(param) {
@@ -1407,6 +1603,9 @@
         this.updateButtonState('toggle-rsi', this.settings.showRsi);
         this.updateButtonState('toggle-macd', this.settings.showMacd);
         this.updateButtonState('toggle-bollinger', this.settings.showBollinger);
+        
+        // Initialize trading buttons
+        this.updateTradingButtons();
       }
     }
     
