@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Bitcoin Chart Academy</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
   <script src="https://unpkg.com/lightweight-charts@4.0.0/dist/lightweight-charts.standalone.production.js"></script>
   <style>
     * {
@@ -13,354 +15,388 @@
     body {
       margin: 0;
       padding: 0;
-      background: #0a0a0a;
-      color: #eee;
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+      color: #e2e8f0;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       overflow-x: hidden;
       touch-action: manipulation;
     }
     
-    .header {
-      background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
-      padding: 15px;
-      text-align: center;
-      border-bottom: 2px solid #333;
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
     
-    .header h1 {
-      margin: 0;
-      font-size: 1.8rem;
-      background: linear-gradient(45deg, #26a69a, #4fc3f7);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+    .glass-effect {
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
     
-    .main-container {
-      display: flex;
-      height: calc(100vh - 80px);
+    .floating-card {
+      background: rgba(30, 41, 59, 0.9);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     }
     
-    .sidebar {
-      width: 300px;
-      background: #1a1a1a;
-      border-right: 2px solid #333;
-      overflow-y: auto;
-      padding: 15px;
-    }
-    
-    .chart-area {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .controls {
-      background: #1a1a1a;
-      padding: 15px;
-      border-bottom: 1px solid #333;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-    }
-    
-    .control-group {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-right: 15px;
-    }
-    
-    .control-group label {
-      font-size: 12px;
-      color: #ccc;
-    }
-    
-    select, input[type="color"] {
-      background: #333;
-      color: #eee;
-      border: 1px solid #555;
-      border-radius: 4px;
-      padding: 5px 8px;
-      font-size: 12px;
-    }
-    
-    .btn {
-      background: #333;
-      border: none;
-      color: white;
-      padding: 8px 12px;
-      border-radius: 4px;
-      font-size: 12px;
+    .pattern-card {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      transition: all 0.3s ease;
       cursor: pointer;
-      transition: all 0.2s;
     }
     
-    .btn:hover {
-      background: #444;
+    .pattern-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -5px rgba(34, 197, 94, 0.2);
+      border-color: rgba(34, 197, 94, 0.5);
     }
     
-    .btn.active {
-      background: #26a69a;
+    .pattern-card.highlighted {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%);
+      border-color: rgba(34, 197, 94, 0.6);
     }
     
-    .btn.quiz-mode {
-      background: #ff6b35;
+    .indicator-card {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      transition: all 0.3s ease;
+      cursor: pointer;
     }
     
-    .btn.quiz-mode:hover {
-      background: #ff8c42;
+    .indicator-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.2);
+      border-color: rgba(139, 92, 246, 0.5);
     }
     
-    .btn.trading-active {
-      background: #4caf50;
+    .indicator-card.highlighted {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(236, 72, 153, 0.2) 100%);
+      border-color: rgba(139, 92, 246, 0.6);
     }
     
-    #chart-container {
-      flex: 1;
-      position: relative;
-      background: #111;
-      min-height: 400px;
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      transition: all 0.3s ease;
     }
     
-    #chart {
-      width: 100%;
-      height: 100%;
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+      transform: translateY(-1px);
+    }
+    
+    .btn-primary.active {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+    }
+    
+    .btn-secondary {
+      background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+      transition: all 0.3s ease;
+    }
+    
+    .btn-secondary:hover {
+      background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+      transform: translateY(-1px);
+    }
+    
+    .btn-quiz {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      transition: all 0.3s ease;
+    }
+    
+    .btn-quiz:hover {
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      transform: translateY(-1px);
+    }
+    
+    .btn-trading {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      transition: all 0.3s ease;
+    }
+    
+    .btn-trading:hover {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      transform: translateY(-1px);
+    }
+    
+    .btn-trading.active {
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.6);
+    }
+    
+    .sidebar-toggle {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 1000;
+      background: rgba(59, 130, 246, 0.9);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      color: white;
+    }
+    
+    .sidebar-toggle:hover {
+      background: rgba(59, 130, 246, 1);
+      transform: scale(1.1);
+    }
+    
+    .sidebar-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(5px);
+      z-index: 999;
+      display: none;
+    }
+    
+    .sidebar-mobile {
+      position: fixed;
+      top: 0;
+      left: -100%;
+      width: 85%;
+      max-width: 400px;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(20px);
+      z-index: 1000;
+      transition: left 0.3s ease;
+      overflow-y: auto;
+      border-right: 1px solid rgba(148, 163, 184, 0.2);
+    }
+    
+    .sidebar-mobile.open {
+      left: 0;
     }
     
     .tooltip {
       position: absolute;
       pointer-events: none;
-      background: rgba(0,0,0,0.9);
+      background: rgba(0, 0, 0, 0.9);
       color: #fff;
-      font-size: 11px;
+      font-size: 12px;
       padding: 8px 12px;
-      border-radius: 6px;
+      border-radius: 8px;
       display: none;
       z-index: 1000;
-      border: 1px solid #333;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      backdrop-filter: blur(10px);
       max-width: 250px;
     }
     
-    .sidebar-section {
-      margin-bottom: 20px;
-      background: #222;
-      border-radius: 8px;
-      padding: 15px;
-    }
-    
-    .sidebar-section h3 {
-      margin: 0 0 10px 0;
-      color: #26a69a;
-      font-size: 14px;
-      border-bottom: 1px solid #333;
-      padding-bottom: 5px;
-    }
-    
-    .pattern-info, .indicator-info {
-      margin-bottom: 15px;
-      padding: 10px;
-      background: #2a2a2a;
-      border-radius: 6px;
-      border-left: 3px solid #26a69a;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    
-    .pattern-info:hover, .indicator-info:hover {
-      background: #333;
-    }
-    
-    .pattern-info.highlighted, .indicator-info.highlighted {
-      background: #1a4a47;
-      border-left-color: #4fc3f7;
-    }
-    
-    .pattern-title, .indicator-title {
-      font-weight: bold;
-      color: #4fc3f7;
-      margin-bottom: 5px;
-      font-size: 13px;
-    }
-    
-    .pattern-description, .indicator-description {
+    .support-resistance-panel {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 12px;
+      padding: 16px;
       font-size: 12px;
-      line-height: 1.4;
-      color: #ccc;
+      color: #e2e8f0;
+      display: none;
+      min-width: 140px;
+      z-index: 1000;
     }
     
-    .pattern-psychology, .indicator-usage {
-      font-size: 11px;
-      color: #999;
-      margin-top: 5px;
-      font-style: italic;
+    .level-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-weight: 500;
+    }
+    
+    .level-item.support {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+    }
+    
+    .level-item.resistance {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
     }
     
     .quiz-overlay {
-      position: absolute;
+      position: fixed;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0,0,0,0.8);
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
       display: none;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
       z-index: 2000;
+      padding: 20px;
     }
     
     .quiz-panel {
-      background: #1a1a1a;
-      border: 2px solid #26a69a;
-      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(20px);
+      border: 2px solid rgba(59, 130, 246, 0.3);
+      border-radius: 16px;
       padding: 30px;
-      max-width: 400px;
+      max-width: 500px;
+      width: 100%;
       text-align: center;
-    }
-    
-    .quiz-question {
-      font-size: 18px;
-      margin-bottom: 20px;
-      color: #4fc3f7;
-    }
-    
-    .quiz-options {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-bottom: 20px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
     }
     
     .quiz-option {
-      background: #333;
-      border: 1px solid #555;
-      color: #eee;
-      padding: 12px;
-      border-radius: 6px;
+      background: rgba(51, 65, 85, 0.8);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      color: #e2e8f0;
+      padding: 12px 16px;
+      border-radius: 8px;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.3s ease;
+      margin-bottom: 8px;
     }
     
     .quiz-option:hover {
-      background: #444;
+      background: rgba(71, 85, 105, 0.8);
+      border-color: rgba(59, 130, 246, 0.5);
+      transform: translateY(-1px);
     }
     
     .quiz-option.correct {
-      background: #2e7d32;
-      border-color: #4caf50;
+      background: rgba(34, 197, 94, 0.3);
+      border-color: #22c55e;
+      color: #dcfce7;
     }
     
     .quiz-option.incorrect {
-      background: #c62828;
-      border-color: #f44336;
+      background: rgba(239, 68, 68, 0.3);
+      border-color: #ef4444;
+      color: #fecaca;
     }
     
     .trading-panel {
-      background: #1a1a1a;
-      border-top: 2px solid #333;
-      padding: 15px;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(20px);
+      border-top: 2px solid rgba(59, 130, 246, 0.3);
+      padding: 20px;
       display: none;
     }
     
-    .trading-controls {
-      display: flex;
-      gap: 15px;
-      align-items: center;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-    }
-    
     .balance-display {
-      font-size: 14px;
-      color: #4fc3f7;
-      font-weight: bold;
+      font-size: 18px;
+      font-weight: 700;
+      color: #3b82f6;
+      text-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
     }
     
     .position-display {
-      font-size: 12px;
-      color: #ccc;
+      font-size: 14px;
+      color: #94a3b8;
+      font-weight: 500;
     }
     
     .trade-btn {
-      background: #4caf50;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
       border: none;
       color: white;
-      padding: 8px 16px;
-      border-radius: 4px;
-      font-size: 12px;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-weight: bold;
+      min-width: 120px;
+    }
+    
+    .trade-btn.buy {
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    }
+    
+    .trade-btn.buy:hover {
+      background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+      transform: translateY(-1px);
     }
     
     .trade-btn.sell {
-      background: #f44336;
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+    
+    .trade-btn.sell:hover {
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      transform: translateY(-1px);
     }
     
     .trade-btn.close {
-      background: #ff9800;
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
     }
     
-    .trade-btn:hover {
-      opacity: 0.8;
+    .trade-btn.close:hover {
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      transform: translateY(-1px);
     }
     
     .trade-btn:disabled {
-      background: #666;
+      background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
       cursor: not-allowed;
       opacity: 0.5;
+      transform: none;
     }
     
     .glossary-term {
-      margin-bottom: 10px;
-      padding: 8px;
-      background: #2a2a2a;
-      border-radius: 4px;
+      background: rgba(71, 85, 105, 0.3);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 8px;
+      transition: all 0.3s ease;
     }
     
-    .glossary-term-name {
-      font-weight: bold;
-      color: #26a69a;
-      font-size: 12px;
-    }
-    
-    .glossary-term-definition {
-      font-size: 11px;
-      color: #ccc;
-      margin-top: 3px;
+    .glossary-term:hover {
+      background: rgba(71, 85, 105, 0.5);
+      border-color: rgba(59, 130, 246, 0.3);
     }
     
     .indicator-values {
       position: absolute;
-      top: 10px;
-      left: 10px;
-      background: rgba(0,0,0,0.7);
-      padding: 10px;
-      border-radius: 6px;
-      font-size: 11px;
-      color: #eee;
+      top: 20px;
+      left: 20px;
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(20px);
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #e2e8f0;
       display: none;
-    }
-    
-    .external-links {
-      margin-top: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.2);
     }
     
     .external-link {
       display: block;
-      color: #4fc3f7;
+      color: #3b82f6;
       text-decoration: none;
-      font-size: 11px;
-      margin-bottom: 5px;
-      padding: 5px;
-      background: #2a2a2a;
-      border-radius: 3px;
-      transition: background 0.2s;
+      font-size: 12px;
+      margin-bottom: 8px;
+      padding: 8px 12px;
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 6px;
+      transition: all 0.3s ease;
     }
     
     .external-link:hover {
-      background: #333;
+      background: rgba(59, 130, 246, 0.2);
+      border-color: rgba(59, 130, 246, 0.4);
+      transform: translateY(-1px);
     }
     
     .loading-indicator {
@@ -368,153 +404,409 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      color: #26a69a;
-      font-size: 16px;
+      color: #3b82f6;
+      font-size: 18px;
+      font-weight: 600;
       display: none;
+      text-align: center;
     }
     
     .pnl-positive {
-      color: #4caf50 !important;
+      color: #22c55e !important;
+      text-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
     }
     
     .pnl-negative {
-      color: #f44336 !important;
+      color: #ef4444 !important;
+      text-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+    }
+    
+    .control-chip {
+      background: rgba(71, 85, 105, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .control-chip:hover {
+      background: rgba(71, 85, 105, 0.8);
+      border-color: rgba(59, 130, 246, 0.5);
+      transform: translateY(-1px);
+    }
+    
+    .control-chip.active {
+      background: rgba(59, 130, 246, 0.8);
+      border-color: #3b82f6;
+      color: white;
+    }
+    
+    .section-header {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+      font-weight: 600;
+      font-size: 14px;
+      color: #3b82f6;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     
     @media (max-width: 768px) {
-      .main-container {
-        flex-direction: column;
+      .sidebar-toggle {
+        display: flex;
       }
       
-      .sidebar {
-        width: 100%;
-        height: 200px;
-        order: 2;
+      .desktop-sidebar {
+        display: none;
       }
       
-      .chart-area {
-        order: 1;
-        height: calc(100vh - 280px);
+      .chart-container {
+        height: calc(100vh - 140px) !important;
       }
       
-      .controls {
-        flex-direction: column;
-        align-items: stretch;
+      .controls-mobile {
+        padding: 12px;
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(148, 163, 184, 0.2);
       }
       
-      .control-group {
-        margin-right: 0;
-        margin-bottom: 5px;
+      .trading-panel {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        border-top: 2px solid rgba(59, 130, 246, 0.3);
+        border-radius: 16px 16px 0 0;
+        max-height: 50vh;
+        overflow-y: auto;
+      }
+    }
+    
+    @media (min-width: 769px) {
+      .sidebar-toggle {
+        display: none;
       }
       
-      .trading-controls {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 10px;
+      .sidebar-mobile {
+        display: none;
+      }
+      
+      .desktop-sidebar {
+        display: flex;
+      }
+    }
+    
+    .animate-pulse {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: .5;
       }
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>🚀 Bitcoin Chart Academy</h1>
+  <!-- Mobile Sidebar Toggle -->
+  <div class="sidebar-toggle" id="sidebar-toggle">
+    <i class="fas fa-bars"></i>
   </div>
   
-  <div class="main-container">
-    <div class="sidebar">
-      <div class="sidebar-section">
-        <h3>📊 Chart Patterns</h3>
-        <div id="patterns-list"></div>
+  <!-- Mobile Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  
+  <!-- Header -->
+  <header class="gradient-bg text-white py-4 px-6 shadow-lg">
+    <div class="flex items-center justify-center">
+      <div class="flex items-center space-x-3">
+        <i class="fas fa-chart-line text-2xl"></i>
+        <h1 class="text-2xl font-bold">Bitcoin Chart Academy</h1>
+        <i class="fas fa-rocket text-2xl"></i>
       </div>
-      
-      <div class="sidebar-section">
-        <h3>📈 Technical Indicators</h3>
-        <div id="indicators-list"></div>
-      </div>
-      
-      <div class="sidebar-section">
-        <h3>📚 Trading Glossary</h3>
-        <div id="glossary-list"></div>
-      </div>
-      
-      <div class="sidebar-section">
-        <h3>🔗 Learning Resources</h3>
-        <div class="external-links">
-          <a href="https://www.investopedia.com/technical-analysis-4689657" target="_blank" class="external-link">📖 Technical Analysis Guide</a>
-          <a href="https://www.tradingview.com/chart/" target="_blank" class="external-link">📈 TradingView Charts</a>
-          <a href="https://academy.binance.com/en/articles/a-complete-guide-to-cryptocurrency-trading-for-beginners" target="_blank" class="external-link">🎓 Binance Academy</a>
-          <a href="https://www.youtube.com/watch?v=8T_cOGGl8kE" target="_blank" class="external-link">🎥 Candlestick Patterns Video</a>
+    </div>
+  </header>
+  
+  <div class="flex h-screen">
+    <!-- Desktop Sidebar -->
+    <div class="desktop-sidebar w-80 bg-gray-900 border-r border-gray-700 overflow-y-auto">
+      <div class="p-6 space-y-6">
+        <!-- Chart Patterns Section -->
+        <div class="floating-card rounded-lg p-4">
+          <div class="section-header">
+            <i class="fas fa-chart-bar"></i>
+            <span>Chart Patterns</span>
+          </div>
+          <div id="patterns-list" class="space-y-3"></div>
+        </div>
+        
+        <!-- Technical Indicators Section -->
+        <div class="floating-card rounded-lg p-4">
+          <div class="section-header">
+            <i class="fas fa-chart-line"></i>
+            <span>Technical Indicators</span>
+          </div>
+          <div id="indicators-list" class="space-y-3"></div>
+        </div>
+        
+        <!-- Trading Glossary Section -->
+        <div class="floating-card rounded-lg p-4">
+          <div class="section-header">
+            <i class="fas fa-book"></i>
+            <span>Trading Glossary</span>
+          </div>
+          <div id="glossary-list" class="space-y-2 max-h-60 overflow-y-auto"></div>
+        </div>
+        
+        <!-- Learning Resources Section -->
+        <div class="floating-card rounded-lg p-4">
+          <div class="section-header">
+            <i class="fas fa-graduation-cap"></i>
+            <span>Learning Resources</span>
+          </div>
+          <div class="external-links space-y-2">
+            <a href="https://www.investopedia.com/technical-analysis-4689657" target="_blank" class="external-link">
+              <i class="fas fa-book-open mr-2"></i>Technical Analysis Guide
+            </a>
+            <a href="https://www.tradingview.com/chart/" target="_blank" class="external-link">
+              <i class="fas fa-chart-area mr-2"></i>TradingView Charts
+            </a>
+            <a href="https://academy.binance.com/en/articles/a-complete-guide-to-cryptocurrency-trading-for-beginners" target="_blank" class="external-link">
+              <i class="fas fa-university mr-2"></i>Binance Academy
+            </a>
+            <a href="https://www.youtube.com/watch?v=8T_cOGGl8kE" target="_blank" class="external-link">
+              <i class="fas fa-video mr-2"></i>Candlestick Patterns
+            </a>
+          </div>
         </div>
       </div>
     </div>
     
-    <div class="chart-area">
-      <div class="controls">
-        <div class="control-group">
-          <label>Timeframe:</label>
-          <select id="timeframe-select">
-            <option value="1m">1 Minute</option>
-            <option value="5m">5 Minutes</option>
-            <option value="15m">15 Minutes</option>
-            <option value="1h" selected>1 Hour</option>
-            <option value="4h">4 Hours</option>
-            <option value="1d">1 Day</option>
-          </select>
+    <!-- Mobile Sidebar -->
+    <div class="sidebar-mobile" id="sidebar-mobile">
+      <div class="p-6 space-y-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-bold text-blue-400">Menu</h2>
+          <button id="close-sidebar" class="text-gray-400 hover:text-white">
+            <i class="fas fa-times text-xl"></i>
+          </button>
         </div>
         
-        <div class="control-group">
-          <label>Candle Color:</label>
-          <input type="color" id="bull-color" value="#26a69a" title="Bullish Candle Color">
-          <input type="color" id="bear-color" value="#ef5350" title="Bearish Candle Color">
+        <!-- Mobile Chart Patterns Section -->
+        <div class="floating-card rounded-lg p-4">
+          <div class="section-header">
+            <i class="fas fa-chart-bar"></i>
+            <span>Chart Patterns</span>
+          </div>
+          <div id="patterns-list-mobile" class="space-y-3"></div>
         </div>
         
-        <button class="btn" id="toggle-patterns">📍 Patterns</button>
-        <button class="btn" id="toggle-ma">📈 Moving Averages</button>
-        <button class="btn" id="toggle-volume">📊 Volume</button>
-        <button class="btn" id="toggle-rsi">⚡ RSI</button>
-        <button class="btn" id="toggle-macd">🌊 MACD</button>
-        <button class="btn" id="toggle-bollinger">📏 Bollinger Bands</button>
-        <button class="btn quiz-mode" id="quiz-mode-btn">🎯 Quiz Mode</button>
-        <button class="btn" id="toggle-trading">💰 Paper Trading</button>
-        <button class="btn" id="save-settings">💾 Save Settings</button>
-        <button class="btn" id="refresh-data">🔄 Refresh Data</button>
+        <!-- Mobile Technical Indicators Section -->
+        <div class="floating-card rounded-lg p-4">
+          <div class="section-header">
+            <i class="fas fa-chart-line"></i>
+            <span>Technical Indicators</span>
+          </div>
+          <div id="indicators-list-mobile" class="space-y-3"></div>
+        </div>
+        
+        <!-- Mobile Trading Glossary Section -->
+        <div class="floating-card rounded-lg p-4">
+          <div class="section-header">
+            <i class="fas fa-book"></i>
+            <span>Trading Glossary</span>
+          </div>
+          <div id="glossary-list-mobile" class="space-y-2 max-h-60 overflow-y-auto"></div>
+        </div>
+        
+        <!-- Mobile Learning Resources Section -->
+        <div class="floating-card rounded-lg p-4">
+          <div class="section-header">
+            <i class="fas fa-graduation-cap"></i>
+            <span>Learning Resources</span>
+          </div>
+          <div class="external-links space-y-2">
+            <a href="https://www.investopedia.com/technical-analysis-4689657" target="_blank" class="external-link">
+              <i class="fas fa-book-open mr-2"></i>Technical Analysis Guide
+            </a>
+            <a href="https://www.tradingview.com/chart/" target="_blank" class="external-link">
+              <i class="fas fa-chart-area mr-2"></i>TradingView Charts
+            </a>
+            <a href="https://academy.binance.com/en/articles/a-complete-guide-to-cryptocurrency-trading-for-beginners" target="_blank" class="external-link">
+              <i class="fas fa-university mr-2"></i>Binance Academy
+            </a>
+            <a href="https://www.youtube.com/watch?v=8T_cOGGl8kE" target="_blank" class="external-link">
+              <i class="fas fa-video mr-2"></i>Candlestick Patterns
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Chart Area -->
+    <div class="flex-1 flex flex-col">
+      <!-- Controls -->
+      <div class="controls-mobile bg-gray-900 p-4 border-b border-gray-700">
+        <div class="flex flex-wrap gap-2 items-center justify-center">
+          <div class="flex items-center space-x-2">
+            <label class="text-sm text-gray-400">Timeframe:</label>
+            <select id="timeframe-select" class="bg-gray-800 text-white border border-gray-600 rounded px-2 py-1 text-sm">
+              <option value="1m">1 Minute</option>
+              <option value="5m">5 Minutes</option>
+              <option value="15m">15 Minutes</option>
+              <option value="1h" selected>1 Hour</option>
+              <option value="4h">4 Hours</option>
+              <option value="1d">1 Day</option>
+            </select>
+          </div>
+          
+          <div class="flex items-center space-x-2">
+            <label class="text-sm text-gray-400">Colors:</label>
+            <input type="color" id="bull-color" value="#26a69a" class="w-8 h-8 rounded border border-gray-600" title="Bullish Candle Color">
+            <input type="color" id="bear-color" value="#ef5350" class="w-8 h-8 rounded border border-gray-600" title="Bearish Candle Color">
+          </div>
+        </div>
+        
+        <div class="flex flex-wrap gap-2 mt-4 justify-center">
+          <button class="control-chip" id="toggle-patterns">
+            <i class="fas fa-map-pin"></i>
+            <span>Patterns</span>
+          </button>
+          <button class="control-chip" id="toggle-swing-points">
+            <i class="fas fa-mountain"></i>
+            <span>HH/LL/LH/HL</span>
+          </button>
+          <button class="control-chip" id="toggle-support-resistance">
+            <i class="fas fa-crosshairs"></i>
+            <span>Support/Resistance</span>
+          </button>
+          <button class="control-chip" id="toggle-ma">
+            <i class="fas fa-chart-line"></i>
+            <span>MA</span>
+          </button>
+          <button class="control-chip" id="toggle-volume">
+            <i class="fas fa-chart-bar"></i>
+            <span>Volume</span>
+          </button>
+          <button class="control-chip" id="toggle-rsi">
+            <i class="fas fa-bolt"></i>
+            <span>RSI</span>
+          </button>
+          <button class="control-chip" id="toggle-macd">
+            <i class="fas fa-water"></i>
+            <span>MACD</span>
+          </button>
+          <button class="control-chip" id="toggle-bollinger">
+            <i class="fas fa-ruler"></i>
+            <span>Bollinger</span>
+          </button>
+        </div>
+        
+        <div class="flex flex-wrap gap-2 mt-4 justify-center">
+          <button class="btn-quiz control-chip" id="quiz-mode-btn">
+            <i class="fas fa-question-circle"></i>
+            <span>Quiz Mode</span>
+          </button>
+          <button class="btn-trading control-chip" id="toggle-trading">
+            <i class="fas fa-coins"></i>
+            <span>Paper Trading</span>
+          </button>
+          <button class="btn-secondary control-chip" id="save-settings">
+            <i class="fas fa-save"></i>
+            <span>Save</span>
+          </button>
+          <button class="btn-secondary control-chip" id="refresh-data">
+            <i class="fas fa-sync-alt"></i>
+            <span>Refresh</span>
+          </button>
+        </div>
       </div>
       
-      <div id="chart-container">
-        <div id="chart"></div>
-        <div class="loading-indicator" id="loading-indicator">Loading chart data...</div>
+      <!-- Chart Container -->
+      <div class="chart-container flex-1 relative bg-gray-900" id="chart-container">
+        <div id="chart" class="w-full h-full"></div>
+        <div class="loading-indicator animate-pulse" id="loading-indicator">
+          <i class="fas fa-spinner fa-spin text-3xl mb-2"></i>
+          <div>Loading chart data...</div>
+        </div>
         <div class="tooltip" id="tooltip"></div>
         <div class="indicator-values" id="indicator-values"></div>
+        <div class="support-resistance-panel" id="support-resistance-panel">
+          <h4 class="text-center text-blue-400 font-semibold mb-2">Key Levels</h4>
+          <div id="levels-list"></div>
+        </div>
       </div>
       
+      <!-- Trading Panel -->
       <div class="trading-panel" id="trading-panel">
-        <div class="trading-controls">
-          <div class="balance-display">Balance: $<span id="balance">10000.00</span></div>
-          <div class="position-display">Position: <span id="position">None</span></div>
-          <div class="position-display">Entry Price: $<span id="entry-price">0.00</span></div>
-          <div class="position-display">P&L: $<span id="pnl">0.00</span></div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          <div class="text-center">
+            <div class="text-sm text-gray-400">Balance</div>
+            <div class="balance-display">$<span id="balance">10000.00</span></div>
+          </div>
+          <div class="text-center">
+            <div class="text-sm text-gray-400">Position</div>
+            <div class="position-display" id="position">None</div>
+          </div>
+          <div class="text-center">
+            <div class="text-sm text-gray-400">Entry Price</div>
+            <div class="position-display">$<span id="entry-price">0.00</span></div>
+          </div>
+          <div class="text-center">
+            <div class="text-sm text-gray-400">P&L</div>
+            <div class="position-display">$<span id="pnl">0.00</span></div>
+          </div>
         </div>
-        <div class="trading-controls">
-          <button class="trade-btn" id="buy-btn">🟢 Buy Long</button>
-          <button class="trade-btn sell" id="sell-btn">🔴 Sell Short</button>
-          <button class="trade-btn close" id="close-position-btn" disabled>❌ Close Position</button>
-          <button class="trade-btn" id="reset-trading">🔄 Reset Account</button>
+        <div class="flex flex-wrap gap-3 justify-center">
+          <button class="trade-btn buy" id="buy-btn">
+            <i class="fas fa-arrow-up mr-2"></i>Buy Long
+          </button>
+          <button class="trade-btn sell" id="sell-btn">
+            <i class="fas fa-arrow-down mr-2"></i>Sell Short
+          </button>
+          <button class="trade-btn close" id="close-position-btn" disabled>
+            <i class="fas fa-times mr-2"></i>Close Position
+          </button>
+          <button class="trade-btn btn-secondary" id="reset-trading">
+            <i class="fas fa-undo mr-2"></i>Reset Account
+          </button>
         </div>
       </div>
     </div>
   </div>
   
+  <!-- Quiz Overlay -->
   <div class="quiz-overlay" id="quiz-overlay">
     <div class="quiz-panel">
-      <div class="quiz-question" id="quiz-question"></div>
-      <div class="quiz-options" id="quiz-options"></div>
-      <button class="btn" id="next-quiz">Next Question</button>
-      <button class="btn" id="exit-quiz">Exit Quiz</button>
+      <div class="text-2xl font-bold text-blue-400 mb-6" id="quiz-question"></div>
+      <div class="space-y-3 mb-6" id="quiz-options"></div>
+      <div class="flex space-x-4 justify-center">
+        <button class="btn-primary px-6 py-2 rounded-lg" id="next-quiz">
+          <i class="fas fa-arrow-right mr-2"></i>Next Question
+        </button>
+        <button class="btn-secondary px-6 py-2 rounded-lg" id="exit-quiz">
+          <i class="fas fa-times mr-2"></i>Exit Quiz
+        </button>
+      </div>
     </div>
   </div>
 
   <script>
-    // Enhanced Bitcoin Chart Academy
+    // Enhanced Bitcoin Chart Academy with improved mobile UI
     class BitcoinChartAcademy {
       constructor() {
         this.chart = null;
@@ -526,16 +818,21 @@
         this.macdSeries = null;
         this.bollingerUpperSeries = null;
         this.bollingerLowerSeries = null;
+        this.supportLineSeries = [];
+        this.resistanceLineSeries = [];
         
         this.candlesData = [];
         this.patterns = [];
+        this.swingPoints = [];
+        this.supportLevels = [];
+        this.resistanceLevels = [];
         this.quizMode = false;
         this.currentQuiz = null;
         this.settings = this.loadSettings();
         
         // Paper trading
         this.balance = 10000;
-        this.position = null; // 'long' or 'short'
+        this.position = null;
         this.entryPrice = 0;
         this.positionSize = 0;
         this.tradingActive = false;
@@ -546,11 +843,43 @@
       init() {
         this.setupChart();
         this.setupEventListeners();
+        this.setupMobileUI();
         this.loadPatternDefinitions();
         this.loadIndicatorDefinitions();
         this.loadGlossary();
         this.applySettings();
         this.fetchData();
+      }
+      
+      setupMobileUI() {
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const sidebarMobile = document.getElementById('sidebar-mobile');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        const closeSidebar = document.getElementById('close-sidebar');
+        
+        sidebarToggle.addEventListener('click', () => {
+          sidebarMobile.classList.add('open');
+          sidebarOverlay.style.display = 'block';
+        });
+        
+        const closeSidebarFn = () => {
+          sidebarMobile.classList.remove('open');
+          sidebarOverlay.style.display = 'none';
+        };
+        
+        closeSidebar.addEventListener('click', closeSidebarFn);
+        sidebarOverlay.addEventListener('click', closeSidebarFn);
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+          if (window.innerWidth > 768) {
+            closeSidebarFn();
+          }
+          this.chart.applyOptions({
+            width: document.getElementById('chart').offsetWidth,
+            height: document.getElementById('chart').offsetHeight
+          });
+        });
       }
       
       setupChart() {
@@ -560,28 +889,32 @@
           width: chartEl.offsetWidth,
           height: chartEl.offsetHeight,
           layout: {
-            background: { color: '#111' },
-            textColor: '#ccc'
+            background: { color: '#111827' },
+            textColor: '#e5e7eb'
           },
           grid: {
-            vertLines: { color: '#222' },
-            horzLines: { color: '#222' }
+            vertLines: { color: '#374151' },
+            horzLines: { color: '#374151' }
           },
           timeScale: {
             timeVisible: true,
             barSpacing: 8,
-            minBarSpacing: 4
+            minBarSpacing: 4,
+            borderColor: '#4b5563'
+          },
+          rightPriceScale: {
+            borderColor: '#4b5563'
           },
           crosshair: {
             mode: 1,
             vertLine: {
               width: 1,
-              color: 'rgba(255,255,255,0.3)',
+              color: 'rgba(59, 130, 246, 0.5)',
               style: 1
             },
             horzLine: {
               width: 1,
-              color: 'rgba(255,255,255,0.3)',
+              color: 'rgba(59, 130, 246, 0.5)',
               style: 1
             }
           }
@@ -589,17 +922,17 @@
         
         // Main candlestick series
         this.candleSeries = this.chart.addCandlestickSeries({
-          upColor: this.settings.bullColor || '#26a69a',
-          downColor: this.settings.bearColor || '#ef5350',
-          borderUpColor: this.settings.bullColor || '#26a69a',
-          borderDownColor: this.settings.bearColor || '#ef5350',
-          wickUpColor: this.settings.bullColor || '#26a69a',
-          wickDownColor: this.settings.bearColor || '#ef5350'
+          upColor: this.settings.bullColor || '#10b981',
+          downColor: this.settings.bearColor || '#ef4444',
+          borderUpColor: this.settings.bullColor || '#10b981',
+          borderDownColor: this.settings.bearColor || '#ef4444',
+          wickUpColor: this.settings.bullColor || '#10b981',
+          wickDownColor: this.settings.bearColor || '#ef4444'
         });
         
         // Volume series
         this.volumeSeries = this.chart.addHistogramSeries({
-          color: '#666',
+          color: '#6b7280',
           priceFormat: { type: 'volume' },
           priceScaleId: 'volume',
           scaleMargins: { top: 0.8, bottom: 0 }
@@ -607,44 +940,44 @@
         
         // Moving averages
         this.ma50Series = this.chart.addLineSeries({
-          color: '#3498db',
+          color: '#3b82f6',
           lineWidth: 2,
           crossHairMarkerVisible: false,
           lastValueVisible: false
         });
         
         this.ma200Series = this.chart.addLineSeries({
-          color: '#e74c3c',
+          color: '#ef4444',
           lineWidth: 2,
           crossHairMarkerVisible: false,
           lastValueVisible: false
         });
         
-        // RSI series (separate pane)
+        // RSI series
         this.rsiSeries = this.chart.addLineSeries({
-          color: '#ff9800',
-          lineWidth: 1,
+          color: '#f59e0b',
+          lineWidth: 2,
           priceScaleId: 'rsi',
           scaleMargins: { top: 0.1, bottom: 0.8 }
         });
         
         // MACD series
         this.macdSeries = this.chart.addLineSeries({
-          color: '#9c27b0',
-          lineWidth: 1,
+          color: '#8b5cf6',
+          lineWidth: 2,
           priceScaleId: 'macd',
           scaleMargins: { top: 0.6, bottom: 0.1 }
         });
         
         // Bollinger Bands
         this.bollingerUpperSeries = this.chart.addLineSeries({
-          color: 'rgba(255, 193, 7, 0.5)',
+          color: 'rgba(251, 191, 36, 0.5)',
           lineWidth: 1,
           crossHairMarkerVisible: false
         });
         
         this.bollingerLowerSeries = this.chart.addLineSeries({
-          color: 'rgba(255, 193, 7, 0.5)',
+          color: 'rgba(251, 191, 36, 0.5)',
           lineWidth: 1,
           crossHairMarkerVisible: false
         });
@@ -659,14 +992,6 @@
         this.toggleIndicator('rsi', false);
         this.toggleIndicator('macd', false);
         this.toggleIndicator('bollinger', false);
-        
-        // Handle window resize
-        window.addEventListener('resize', () => {
-          this.chart.applyOptions({
-            width: chartEl.offsetWidth,
-            height: chartEl.offsetHeight
-          });
-        });
       }
       
       setupEventListeners() {
@@ -690,6 +1015,14 @@
         // Toggle buttons
         document.getElementById('toggle-patterns').addEventListener('click', () => {
           this.togglePatterns();
+        });
+        
+        document.getElementById('toggle-swing-points').addEventListener('click', () => {
+          this.toggleSwingPoints();
+        });
+        
+        document.getElementById('toggle-support-resistance').addEventListener('click', () => {
+          this.toggleSupportResistance();
         });
         
         document.getElementById('toggle-ma').addEventListener('click', () => {
@@ -775,6 +1108,8 @@
           
           this.updateChart();
           this.detectPatterns();
+          this.detectSwingPoints();
+          this.detectSupportResistance();
           this.calculateIndicators();
           this.updateTradingDisplay();
           this.showLoading(false);
@@ -782,13 +1117,33 @@
         } catch (error) {
           console.error('Error fetching data:', error);
           this.showLoading(false);
-          alert('Failed to load chart data. Please check your internet connection and try again.');
+          this.showAlert('Failed to load chart data. Please check your internet connection and try again.', 'error');
         }
       }
       
       showLoading(show) {
         const loadingIndicator = document.getElementById('loading-indicator');
         loadingIndicator.style.display = show ? 'block' : 'none';
+      }
+      
+      showAlert(message, type = 'info') {
+        // Create modern alert
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm ${
+          type === 'error' ? 'bg-red-500' : type === 'success' ? 'bg-green-500' : 'bg-blue-500'
+        } text-white`;
+        alertDiv.innerHTML = `
+          <div class="flex items-center">
+            <i class="fas fa-${type === 'error' ? 'exclamation-circle' : type === 'success' ? 'check-circle' : 'info-circle'} mr-3"></i>
+            <span>${message}</span>
+          </div>
+        `;
+        
+        document.body.appendChild(alertDiv);
+        
+        setTimeout(() => {
+          alertDiv.remove();
+        }, 3000);
       }
       
       updateChart() {
@@ -798,7 +1153,7 @@
         const volumeData = this.candlesData.map(c => ({
           time: c.time,
           value: c.volume,
-          color: c.close > c.open ? 'rgba(38, 166, 154, 0.5)' : 'rgba(239, 83, 80, 0.5)'
+          color: c.close > c.open ? 'rgba(16, 185, 129, 0.5)' : 'rgba(239, 68, 68, 0.5)'
         }));
         this.volumeSeries.setData(volumeData);
       }
@@ -959,7 +1314,7 @@
             time: candle.time,
             index: index,
             position: 'aboveBar',
-            color: '#ffff00',
+            color: '#fbbf24',
             shape: 'circle',
             text: 'Doji'
           });
@@ -979,7 +1334,7 @@
             time: curr.time,
             index: index,
             position: 'belowBar',
-            color: '#00ff00',
+            color: '#10b981',
             shape: 'arrowUp',
             text: 'Bullish Engulfing'
           });
@@ -992,7 +1347,7 @@
             time: curr.time,
             index: index,
             position: 'aboveBar',
-            color: '#ff4444',
+            color: '#ef4444',
             shape: 'arrowDown',
             text: 'Bearish Engulfing'
           });
@@ -1010,7 +1365,7 @@
             time: candle.time,
             index: index,
             position: 'belowBar',
-            color: '#00ff00',
+            color: '#10b981',
             shape: 'arrowUp',
             text: 'Hammer'
           });
@@ -1028,11 +1383,265 @@
             time: candle.time,
             index: index,
             position: 'aboveBar',
-            color: '#ff4444',
+            color: '#ef4444',
             shape: 'arrowDown',
             text: 'Shooting Star'
           });
         }
+      }
+      
+      detectSwingPoints() {
+        this.swingPoints = [];
+        const lookback = 5;
+        
+        for (let i = lookback; i < this.candlesData.length - lookback; i++) {
+          const current = this.candlesData[i];
+          
+          // Check for Higher High (HH)
+          let isHigherHigh = true;
+          for (let j = i - lookback; j <= i + lookback; j++) {
+            if (j !== i && this.candlesData[j].high >= current.high) {
+              isHigherHigh = false;
+              break;
+            }
+          }
+          
+          if (isHigherHigh) {
+            let foundPreviousHigh = false;
+            for (let k = Math.max(0, i - 50); k < i - lookback; k++) {
+              if (this.candlesData[k].high > current.high * 0.98 && this.candlesData[k].high < current.high) {
+                foundPreviousHigh = true;
+                break;
+              }
+            }
+            
+            if (foundPreviousHigh) {
+              this.swingPoints.push({
+                type: 'higher_high',
+                time: current.time,
+                price: current.high,
+                position: 'aboveBar',
+                color: '#10b981',
+                shape: 'circle',
+                text: 'HH'
+              });
+            }
+          }
+          
+          // Check for Lower Low (LL)
+          let isLowerLow = true;
+          for (let j = i - lookback; j <= i + lookback; j++) {
+            if (j !== i && this.candlesData[j].low <= current.low) {
+              isLowerLow = false;
+              break;
+            }
+          }
+          
+          if (isLowerLow) {
+            let foundPreviousLow = false;
+            for (let k = Math.max(0, i - 50); k < i - lookback; k++) {
+              if (this.candlesData[k].low < current.low * 1.02 && this.candlesData[k].low > current.low) {
+                foundPreviousLow = true;
+                break;
+              }
+            }
+            
+            if (foundPreviousLow) {
+              this.swingPoints.push({
+                type: 'lower_low',
+                time: current.time,
+                price: current.low,
+                position: 'belowBar',
+                color: '#ef4444',
+                shape: 'circle',
+                text: 'LL'
+              });
+            }
+          }
+          
+          // Check for Lower High (LH)
+          if (isHigherHigh) {
+            let foundHigherPrevious = false;
+            for (let k = Math.max(0, i - 50); k < i - lookback; k++) {
+              if (this.candlesData[k].high > current.high) {
+                foundHigherPrevious = true;
+                break;
+              }
+            }
+            
+            if (foundHigherPrevious) {
+              this.swingPoints.push({
+                type: 'lower_high',
+                time: current.time,
+                price: current.high,
+                position: 'aboveBar',
+                color: '#f59e0b',
+                shape: 'circle',
+                text: 'LH'
+              });
+            }
+          }
+          
+          // Check for Higher Low (HL)
+          if (isLowerLow) {
+            let foundLowerPrevious = false;
+            for (let k = Math.max(0, i - 50); k < i - lookback; k++) {
+              if (this.candlesData[k].low < current.low) {
+                foundLowerPrevious = true;
+                break;
+              }
+            }
+            
+            if (foundLowerPrevious) {
+              this.swingPoints.push({
+                type: 'higher_low',
+                time: current.time,
+                price: current.low,
+                position: 'belowBar',
+                color: '#06b6d4',
+                shape: 'circle',
+                text: 'HL'
+              });
+            }
+          }
+        }
+        
+        this.updateSwingPointMarkers();
+      }
+      
+      detectSupportResistance() {
+        this.supportLevels = [];
+        this.resistanceLevels = [];
+        
+        // Clear existing support/resistance lines
+        this.supportLineSeries.forEach(series => this.chart.removeSeries(series));
+        this.resistanceLineSeries.forEach(series => this.chart.removeSeries(series));
+        this.supportLineSeries = [];
+        this.resistanceLineSeries = [];
+        
+        const tolerance = 0.015;
+        const minTouches = 3;
+        
+        // Collect all highs and lows
+        const highs = this.candlesData.map((c, i) => ({ price: c.high, time: c.time, index: i }));
+        const lows = this.candlesData.map((c, i) => ({ price: c.low, time: c.time, index: i }));
+        
+        // Find resistance levels
+        const resistanceLevels = this.findSignificantLevels(highs, tolerance, minTouches);
+        resistanceLevels.forEach(level => {
+          this.resistanceLevels.push(level);
+          
+          const resistanceLine = this.chart.addLineSeries({
+            color: 'rgba(239, 68, 68, 0.7)',
+            lineWidth: 2,
+            lineStyle: 1,
+            crossHairMarkerVisible: false,
+            lastValueVisible: true,
+            priceLineVisible: false
+          });
+          
+          const lineData = [
+            { time: this.candlesData[0].time, value: level.price },
+            { time: this.candlesData[this.candlesData.length - 1].time, value: level.price }
+          ];
+          resistanceLine.setData(lineData);
+          this.resistanceLineSeries.push(resistanceLine);
+        });
+        
+        // Find support levels
+        const supportLevels = this.findSignificantLevels(lows, tolerance, minTouches);
+        supportLevels.forEach(level => {
+          this.supportLevels.push(level);
+          
+          const supportLine = this.chart.addLineSeries({
+            color: 'rgba(34, 197, 94, 0.7)',
+            lineWidth: 2,
+            lineStyle: 1,
+            crossHairMarkerVisible: false,
+            lastValueVisible: true,
+            priceLineVisible: false
+          });
+          
+          const lineData = [
+            { time: this.candlesData[0].time, value: level.price },
+            { time: this.candlesData[this.candlesData.length - 1].time, value: level.price }
+          ];
+          supportLine.setData(lineData);
+          this.supportLineSeries.push(supportLine);
+        });
+        
+        this.updateSupportResistancePanel();
+      }
+      
+      findSignificantLevels(points, tolerance, minTouches) {
+        const levels = [];
+        const groupedPoints = {};
+        
+        points.forEach(point => {
+          let foundGroup = false;
+          for (let levelPrice in groupedPoints) {
+            if (Math.abs(point.price - parseFloat(levelPrice)) / parseFloat(levelPrice) < tolerance) {
+              groupedPoints[levelPrice].push(point);
+              foundGroup = true;
+              break;
+            }
+          }
+          if (!foundGroup) {
+            groupedPoints[point.price] = [point];
+          }
+        });
+        
+        for (let levelPrice in groupedPoints) {
+          if (groupedPoints[levelPrice].length >= minTouches) {
+            const avgPrice = groupedPoints[levelPrice].reduce((sum, p) => sum + p.price, 0) / groupedPoints[levelPrice].length;
+            const touches = groupedPoints[levelPrice].length;
+            const strength = Math.min(touches / 5, 1);
+            
+            levels.push({
+              price: avgPrice,
+              touches: touches,
+              strength: strength,
+              points: groupedPoints[levelPrice]
+            });
+          }
+        }
+        
+        return levels.sort((a, b) => b.strength - a.strength).slice(0, 5);
+      }
+      
+      updateSupportResistancePanel() {
+        const panel = document.getElementById('support-resistance-panel');
+        const levelsList = document.getElementById('levels-list');
+        
+        if (!this.settings.showSupportResistance) {
+          panel.style.display = 'none';
+          return;
+        }
+        
+        panel.style.display = 'block';
+        levelsList.innerHTML = '';
+        
+        // Add resistance levels
+        this.resistanceLevels.forEach(level => {
+          const levelDiv = document.createElement('div');
+          levelDiv.className = 'level-item resistance';
+          levelDiv.innerHTML = `
+            <span>Res:</span>
+            <span>$${level.price.toFixed(2)}</span>
+          `;
+          levelsList.appendChild(levelDiv);
+        });
+        
+        // Add support levels
+        this.supportLevels.forEach(level => {
+          const levelDiv = document.createElement('div');
+          levelDiv.className = 'level-item support';
+          levelDiv.innerHTML = `
+            <span>Sup:</span>
+            <span>$${level.price.toFixed(2)}</span>
+          `;
+          levelsList.appendChild(levelDiv);
+        });
       }
       
       updatePatternMarkers() {
@@ -1041,6 +1650,26 @@
         } else {
           this.candleSeries.setMarkers([]);
         }
+      }
+      
+      updateSwingPointMarkers() {
+        if (this.settings.showSwingPoints) {
+          this.candleSeries.setMarkers(this.swingPoints);
+        }
+      }
+      
+      updateAllMarkers() {
+        let allMarkers = [];
+        
+        if (this.settings.showPatterns) {
+          allMarkers = [...allMarkers, ...this.patterns];
+        }
+        
+        if (this.settings.showSwingPoints) {
+          allMarkers = [...allMarkers, ...this.swingPoints];
+        }
+        
+        this.candleSeries.setMarkers(allMarkers);
       }
       
       loadPatternDefinitions() {
@@ -1084,30 +1713,69 @@
             psychology: 'Buyers pushed price up but sellers stepped in, showing potential resistance.',
             confirmation: 'Next candle should close below the shooting star\'s low.',
             examples: 'Strong reversal signal when found at key resistance levels.'
+          },
+          {
+            name: 'Higher Highs (HH)',
+            type: 'higher_high',
+            description: 'A price peak that surpasses the previous high point, indicating upward momentum.',
+            psychology: 'Buyers are in control and pushing prices to new highs, showing bullish strength.',
+            confirmation: 'Look for sustained buying pressure and volume confirmation.',
+            examples: 'Series of HH with HL confirms a strong uptrend and bullish market sentiment.'
+          },
+          {
+            name: 'Lower Lows (LL)',
+            type: 'lower_low',
+            description: 'A price trough that falls below the previous low point, indicating downward momentum.',
+            psychology: 'Sellers are in control and pushing prices to new lows, showing bearish weakness.',
+            confirmation: 'Look for sustained selling pressure and volume confirmation.',
+            examples: 'Series of LL with LH confirms a strong downtrend and bearish market sentiment.'
+          },
+          {
+            name: 'Lower Highs (LH)',
+            type: 'lower_high',
+            description: 'A price peak that is lower than the previous high, indicating weakening upward momentum.',
+            psychology: 'Bulls are losing control, unable to push prices to new highs, showing potential reversal.',
+            confirmation: 'Combined with LL, confirms downtrend. Watch for breakdown below support.',
+            examples: 'LH pattern often precedes trend reversals from bullish to bearish.'
+          },
+          {
+            name: 'Higher Lows (HL)',
+            type: 'higher_low',
+            description: 'A price trough that is higher than the previous low, indicating strengthening upward momentum.',
+            psychology: 'Bears are losing control, unable to push prices to new lows, showing potential reversal.',
+            confirmation: 'Combined with HH, confirms uptrend. Watch for breakout above resistance.',
+            examples: 'HL pattern often precedes trend reversals from bearish to bullish.'
           }
         ];
         
-        const patternsList = document.getElementById('patterns-list');
-        patternsList.innerHTML = '';
+        this.populatePatternsList(patterns, 'patterns-list');
+        this.populatePatternsList(patterns, 'patterns-list-mobile');
+      }
+      
+      populatePatternsList(patterns, containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        
+        container.innerHTML = '';
         
         patterns.forEach(pattern => {
           const patternDiv = document.createElement('div');
-          patternDiv.className = 'pattern-info';
+          patternDiv.className = 'pattern-card rounded-lg p-4';
           patternDiv.dataset.type = pattern.type;
           
           patternDiv.innerHTML = `
-            <div class="pattern-title">${pattern.name}</div>
-            <div class="pattern-description">${pattern.description}</div>
-            <div class="pattern-psychology"><strong>Psychology:</strong> ${pattern.psychology}</div>
-            <div class="pattern-psychology"><strong>Confirmation:</strong> ${pattern.confirmation}</div>
-            <div class="pattern-psychology"><strong>Examples:</strong> ${pattern.examples}</div>
+            <div class="text-sm font-bold text-green-400 mb-2">${pattern.name}</div>
+            <div class="text-xs text-gray-300 mb-2">${pattern.description}</div>
+            <div class="text-xs text-gray-400 mb-1"><strong>Psychology:</strong> ${pattern.psychology}</div>
+            <div class="text-xs text-gray-400 mb-1"><strong>Confirmation:</strong> ${pattern.confirmation}</div>
+            <div class="text-xs text-gray-400"><strong>Examples:</strong> ${pattern.examples}</div>
           `;
           
           patternDiv.addEventListener('click', () => {
             this.highlightPattern(pattern.type);
           });
           
-          patternsList.appendChild(patternDiv);
+          container.appendChild(patternDiv);
         });
       }
       
@@ -1147,27 +1815,34 @@
           }
         ];
         
-        const indicatorsList = document.getElementById('indicators-list');
-        indicatorsList.innerHTML = '';
+        this.populateIndicatorsList(indicators, 'indicators-list');
+        this.populateIndicatorsList(indicators, 'indicators-list-mobile');
+      }
+      
+      populateIndicatorsList(indicators, containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        
+        container.innerHTML = '';
         
         indicators.forEach(indicator => {
           const indicatorDiv = document.createElement('div');
-          indicatorDiv.className = 'indicator-info';
+          indicatorDiv.className = 'indicator-card rounded-lg p-4';
           indicatorDiv.dataset.type = indicator.type;
           
           indicatorDiv.innerHTML = `
-            <div class="indicator-title">${indicator.name}</div>
-            <div class="indicator-description">${indicator.description}</div>
-            <div class="indicator-usage"><strong>Usage:</strong> ${indicator.usage}</div>
-            <div class="indicator-usage"><strong>Interpretation:</strong> ${indicator.interpretation}</div>
-            <div class="indicator-usage"><strong>Signals:</strong> ${indicator.signals}</div>
+            <div class="text-sm font-bold text-purple-400 mb-2">${indicator.name}</div>
+            <div class="text-xs text-gray-300 mb-2">${indicator.description}</div>
+            <div class="text-xs text-gray-400 mb-1"><strong>Usage:</strong> ${indicator.usage}</div>
+            <div class="text-xs text-gray-400 mb-1"><strong>Interpretation:</strong> ${indicator.interpretation}</div>
+            <div class="text-xs text-gray-400"><strong>Signals:</strong> ${indicator.signals}</div>
           `;
           
           indicatorDiv.addEventListener('click', () => {
             this.highlightIndicator(indicator.type);
           });
           
-          indicatorsList.appendChild(indicatorDiv);
+          container.appendChild(indicatorDiv);
         });
       }
       
@@ -1177,6 +1852,12 @@
           { term: 'Bear Market', definition: 'A market characterized by falling prices and pessimistic sentiment.' },
           { term: 'Support', definition: 'A price level where buying interest is strong enough to prevent further decline.' },
           { term: 'Resistance', definition: 'A price level where selling interest is strong enough to prevent further advance.' },
+          { term: 'Higher High (HH)', definition: 'A price peak that surpasses the previous high point, indicating upward momentum.' },
+          { term: 'Lower Low (LL)', definition: 'A price trough that falls below the previous low point, indicating downward momentum.' },
+          { term: 'Lower High (LH)', definition: 'A price peak that is lower than the previous high, indicating weakening momentum.' },
+          { term: 'Higher Low (HL)', definition: 'A price trough that is higher than the previous low, indicating strengthening momentum.' },
+          { term: 'Uptrend', definition: 'A series of higher highs and higher lows, indicating bullish market sentiment.' },
+          { term: 'Downtrend', definition: 'A series of lower highs and lower lows, indicating bearish market sentiment.' },
           { term: 'Volume', definition: 'The number of shares or contracts traded during a specific period.' },
           { term: 'Volatility', definition: 'The degree of price fluctuation in a security or market.' },
           { term: 'Liquidity', definition: 'The ease with which an asset can be bought or sold without affecting its price.' },
@@ -1189,70 +1870,117 @@
           { term: 'Take Profit', definition: 'An order to sell a security when it reaches a certain price to secure gains.' }
         ];
         
-        const glossaryList = document.getElementById('glossary-list');
-        glossaryList.innerHTML = '';
+        this.populateGlossaryList(glossaryTerms, 'glossary-list');
+        this.populateGlossaryList(glossaryTerms, 'glossary-list-mobile');
+      }
+      
+      populateGlossaryList(terms, containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
         
-        glossaryTerms.forEach(item => {
+        container.innerHTML = '';
+        
+        terms.forEach(item => {
           const termDiv = document.createElement('div');
           termDiv.className = 'glossary-term';
           termDiv.innerHTML = `
-            <div class="glossary-term-name">${item.term}</div>
-            <div class="glossary-term-definition">${item.definition}</div>
+            <div class="text-xs font-bold text-blue-400">${item.term}</div>
+            <div class="text-xs text-gray-300 mt-1">${item.definition}</div>
           `;
-          glossaryList.appendChild(termDiv);
+          container.appendChild(termDiv);
         });
       }
       
       highlightPattern(patternType) {
         // Remove previous highlights
-        document.querySelectorAll('.pattern-info').forEach(el => {
+        document.querySelectorAll('.pattern-card').forEach(el => {
           el.classList.remove('highlighted');
         });
         
         // Highlight selected pattern
-        const patternElement = document.querySelector(`[data-type="${patternType}"]`);
-        if (patternElement) {
-          patternElement.classList.add('highlighted');
-          patternElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+        const patternElements = document.querySelectorAll(`[data-type="${patternType}"]`);
+        patternElements.forEach(el => {
+          if (el.classList.contains('pattern-card')) {
+            el.classList.add('highlighted');
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        });
         
         // Highlight patterns on chart
-        const filteredPatterns = this.patterns.filter(p => p.type === patternType);
-        this.candleSeries.setMarkers(filteredPatterns);
+        let filteredMarkers = [];
+        
+        if (['higher_high', 'lower_low', 'lower_high', 'higher_low'].includes(patternType)) {
+          filteredMarkers = this.swingPoints.filter(p => p.type === patternType);
+        } else {
+          filteredMarkers = this.patterns.filter(p => p.type === patternType);
+        }
+        
+        this.candleSeries.setMarkers(filteredMarkers);
         
         // Reset after 3 seconds
         setTimeout(() => {
-          this.updatePatternMarkers();
-          patternElement?.classList.remove('highlighted');
+          this.updateAllMarkers();
+          patternElements.forEach(el => {
+            if (el.classList.contains('pattern-card')) {
+              el.classList.remove('highlighted');
+            }
+          });
         }, 3000);
       }
       
       highlightIndicator(indicatorType) {
         // Remove previous highlights
-        document.querySelectorAll('.indicator-info').forEach(el => {
+        document.querySelectorAll('.indicator-card').forEach(el => {
           el.classList.remove('highlighted');
         });
         
         // Highlight selected indicator
-        const indicatorElement = document.querySelector(`[data-type="${indicatorType}"]`);
-        if (indicatorElement) {
-          indicatorElement.classList.add('highlighted');
-          indicatorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          
-          // Temporarily show the indicator
-          this.toggleIndicator(indicatorType, true);
-          
-          // Reset after 5 seconds
-          setTimeout(() => {
-            indicatorElement.classList.remove('highlighted');
-          }, 5000);
-        }
+        const indicatorElements = document.querySelectorAll(`[data-type="${indicatorType}"]`);
+        indicatorElements.forEach(el => {
+          if (el.classList.contains('indicator-card')) {
+            el.classList.add('highlighted');
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        });
+        
+        // Temporarily show the indicator
+        this.toggleIndicator(indicatorType, true);
+        
+        // Reset after 5 seconds
+        setTimeout(() => {
+          indicatorElements.forEach(el => {
+            if (el.classList.contains('indicator-card')) {
+              el.classList.remove('highlighted');
+            }
+          });
+        }, 5000);
       }
       
       togglePatterns() {
         this.settings.showPatterns = !this.settings.showPatterns;
-        this.updatePatternMarkers();
         this.updateButtonState('toggle-patterns', this.settings.showPatterns);
+        this.updateAllMarkers();
+      }
+      
+      toggleSwingPoints() {
+        this.settings.showSwingPoints = !this.settings.showSwingPoints;
+        this.updateButtonState('toggle-swing-points', this.settings.showSwingPoints);
+        this.updateAllMarkers();
+      }
+      
+      toggleSupportResistance() {
+        this.settings.showSupportResistance = !this.settings.showSupportResistance;
+        this.updateButtonState('toggle-support-resistance', this.settings.showSupportResistance);
+        
+        // Show/hide support and resistance lines
+        this.supportLineSeries.forEach(series => {
+          series.applyOptions({ visible: this.settings.showSupportResistance });
+        });
+        this.resistanceLineSeries.forEach(series => {
+          series.applyOptions({ visible: this.settings.showSupportResistance });
+        });
+        
+        this.updateSupportResistancePanel();
       }
       
       toggleIndicator(indicator, forceState = null) {
@@ -1284,10 +2012,12 @@
       
       updateButtonState(buttonId, active) {
         const button = document.getElementById(buttonId);
-        if (active) {
-          button.classList.add('active');
-        } else {
-          button.classList.remove('active');
+        if (button) {
+          if (active) {
+            button.classList.add('active');
+          } else {
+            button.classList.remove('active');
+          }
         }
       }
       
@@ -1318,10 +2048,14 @@
       }
       
       nextQuizQuestion() {
-        const quizPatterns = this.patterns.filter(p => ['doji', 'bullish_engulfing', 'bearish_engulfing', 'hammer', 'shooting_star'].includes(p.type));
+        const allPatterns = [...this.patterns, ...this.swingPoints];
+        const quizPatterns = allPatterns.filter(p => 
+          ['doji', 'bullish_engulfing', 'bearish_engulfing', 'hammer', 'shooting_star', 
+           'higher_high', 'lower_low', 'lower_high', 'higher_low'].includes(p.type)
+        );
         
         if (quizPatterns.length === 0) {
-          alert('No patterns found for quiz. Please wait for data to load.');
+          this.showAlert('No patterns found for quiz. Please wait for data to load.', 'error');
           return;
         }
         
@@ -1332,7 +2066,8 @@
         this.candleSeries.setMarkers([randomPattern]);
         
         // Create quiz question
-        const options = ['Doji', 'Bullish Engulfing', 'Bearish Engulfing', 'Hammer', 'Shooting Star'];
+        const options = ['Doji', 'Bullish Engulfing', 'Bearish Engulfing', 'Hammer', 'Shooting Star', 
+                        'Higher High (HH)', 'Lower Low (LL)', 'Lower High (LH)', 'Higher Low (HL)'];
         const correctAnswer = this.getPatternDisplayName(randomPattern.type);
         
         // Shuffle options
@@ -1377,7 +2112,11 @@
           'bullish_engulfing': 'Bullish Engulfing',
           'bearish_engulfing': 'Bearish Engulfing',
           'hammer': 'Hammer',
-          'shooting_star': 'Shooting Star'
+          'shooting_star': 'Shooting Star',
+          'higher_high': 'Higher High (HH)',
+          'lower_low': 'Lower Low (LL)',
+          'lower_high': 'Lower High (LH)',
+          'higher_low': 'Higher Low (HL)'
         };
         return names[type] || type;
       }
@@ -1385,7 +2124,7 @@
       exitQuizMode() {
         this.quizMode = false;
         document.getElementById('quiz-overlay').style.display = 'none';
-        this.updatePatternMarkers();
+        this.updateAllMarkers();
       }
       
       toggleTradingPanel() {
@@ -1395,10 +2134,7 @@
         this.updateButtonState('toggle-trading', this.tradingActive);
         
         if (this.tradingActive) {
-          document.getElementById('toggle-trading').classList.add('trading-active');
           this.updateTradingDisplay();
-        } else {
-          document.getElementById('toggle-trading').classList.remove('trading-active');
         }
       }
       
@@ -1407,9 +2143,9 @@
         
         const currentPrice = this.candlesData[this.candlesData.length - 1].close;
         
-        this.position = type; // 'long' or 'short'
+        this.position = type;
         this.entryPrice = currentPrice;
-        this.positionSize = Math.floor(this.balance / currentPrice * 0.95); // Use 95% of balance
+        this.positionSize = Math.floor(this.balance / currentPrice * 0.95);
         
         this.updateTradingDisplay();
         this.updateTradingButtons();
@@ -1437,8 +2173,7 @@
         
         // Show trade result
         const result = pnl >= 0 ? 'Profit' : 'Loss';
-        const color = pnl >= 0 ? '#4caf50' : '#f44336';
-        alert(`Position closed! ${result}: $${pnl.toFixed(2)}`);
+        this.showAlert(`Position closed! ${result}: $${pnl.toFixed(2)}`, pnl >= 0 ? 'success' : 'error');
       }
       
       resetTradingAccount() {
@@ -1450,7 +2185,7 @@
         this.updateTradingDisplay();
         this.updateTradingButtons();
         
-        alert('Trading account reset to $10,000');
+        this.showAlert('Trading account reset to $10,000', 'success');
       }
       
       updateTradingDisplay() {
@@ -1502,9 +2237,10 @@
         }
         
         // Show pattern tooltip
-        const pattern = this.patterns.find(p => p.time === param.time);
-        if (pattern) {
-          this.showTooltip(pattern.text, param.point.x, param.point.y);
+        const allMarkers = [...this.patterns, ...this.swingPoints];
+        const marker = allMarkers.find(p => p.time === param.time);
+        if (marker) {
+          this.showTooltip(marker.text, param.point.x, param.point.y);
         } else {
           document.getElementById('tooltip').style.display = 'none';
         }
@@ -1521,9 +2257,10 @@
       onChartClick(param) {
         if (!param.time) return;
         
-        const pattern = this.patterns.find(p => p.time === param.time);
-        if (pattern) {
-          this.highlightPattern(pattern.type);
+        const allMarkers = [...this.patterns, ...this.swingPoints];
+        const marker = allMarkers.find(p => p.time === param.time);
+        if (marker) {
+          this.highlightPattern(marker.type);
         }
       }
       
@@ -1546,7 +2283,7 @@
             const rsiData = this.rsiSeries.data();
             const rsiValue = rsiData.find(d => d.time === param.time);
             if (rsiValue) {
-              content += `RSI: ${rsiValue.value.toFixed(2)}<br>`;
+              content += `<div class="flex items-center space-x-2"><i class="fas fa-bolt text-yellow-400"></i><span>RSI: ${rsiValue.value.toFixed(2)}</span></div>`;
             }
           }
           
@@ -1555,7 +2292,7 @@
             const macdData = this.macdSeries.data();
             const macdValue = macdData.find(d => d.time === param.time);
             if (macdValue) {
-              content += `MACD: ${macdValue.value.toFixed(4)}<br>`;
+              content += `<div class="flex items-center space-x-2"><i class="fas fa-water text-purple-400"></i><span>MACD: ${macdValue.value.toFixed(4)}</span></div>`;
             }
           }
           
@@ -1570,16 +2307,18 @@
       
       saveSettings() {
         localStorage.setItem('bitcoinChartSettings', JSON.stringify(this.settings));
-        alert('Settings saved successfully!');
+        this.showAlert('Settings saved successfully!', 'success');
       }
       
       loadSettings() {
         const saved = localStorage.getItem('bitcoinChartSettings');
         return saved ? JSON.parse(saved) : {
           timeframe: '1h',
-          bullColor: '#26a69a',
-          bearColor: '#ef5350',
+          bullColor: '#10b981',
+          bearColor: '#ef4444',
           showPatterns: true,
+          showSwingPoints: false,
+          showSupportResistance: false,
           showMa: false,
           showVolume: false,
           showRsi: false,
@@ -1598,6 +2337,8 @@
         
         // Apply button states
         this.updateButtonState('toggle-patterns', this.settings.showPatterns);
+        this.updateButtonState('toggle-swing-points', this.settings.showSwingPoints);
+        this.updateButtonState('toggle-support-resistance', this.settings.showSupportResistance);
         this.updateButtonState('toggle-ma', this.settings.showMa);
         this.updateButtonState('toggle-volume', this.settings.showVolume);
         this.updateButtonState('toggle-rsi', this.settings.showRsi);
@@ -1616,4 +2357,3 @@
   </script>
 </body>
 </html>
-
